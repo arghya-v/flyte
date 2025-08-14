@@ -1,11 +1,17 @@
-// pages/index.tsx
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import SearchBar from '@/components/searchbar';
+import FlightCard from '@/components/flightcard';
 
 export default function Home() {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState<Date | null>(null); // <-- changed to Date | null
   const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [infants, setInfants] = useState(0);
+  const [flightType, setFlightType] = useState('One-way');
+  const [serviceClass, setServiceClass] = useState('Economy');
   const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,8 +27,11 @@ export default function Home() {
     setFlights([]);
 
     try {
+      // Convert date to YYYY-MM-DD string for API
+      const formattedDate = date.toISOString().split('T')[0];
+
       const res = await fetch(
-        `/api/searchFlights?origin=${origin}&destination=${destination}&date=${date}&adults=${adults}`
+        `/api/searchFlights?origin=${origin}&destination=${destination}&date=${formattedDate}&adults=${adults}&children=${children}&infants=${infants}&flightType=${flightType}&serviceClass=${serviceClass}`
       );
       const data = await res.json();
       setFlights(data || []);
@@ -35,88 +44,48 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      <h1 className="text-4xl font-bold mb-8 text-center">Flight Search</h1>
+    <div className="min-h-screen bg-[#0C041C] text-textPrimary font-inter flex flex-col items-center p-6">
+      <h1 className="text-5xl font-bold mb-10 text-center text-primary">
+        Flyte
+      </h1>
 
-      <div className="bg-white shadow-md rounded p-6 w-full max-w-md space-y-4">
-        {/* Inputs */}
-        <div className="flex flex-col space-y-2">
-          <label className="font-semibold">Origin (IATA code)</label>
-          <input
-            className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="e.g. YYZ"
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value.toUpperCase())}
-          />
-        </div>
+      <SearchBar
+        origin={origin}
+        setOrigin={setOrigin}
+        destination={destination}
+        setDestination={setDestination}
+        date={date}
+        setDate={setDate}
+        adults={adults}
+        setAdults={setAdults}
+        children={children}
+        setChildren={setChildren}
+        infants={infants}
+        setInfants={setInfants}
+        flightType={flightType}
+        setFlightType={setFlightType}
+        serviceClass={serviceClass}
+        setServiceClass={setServiceClass}
+        onSearch={searchFlights}
+      />
 
-        <div className="flex flex-col space-y-2">
-          <label className="font-semibold">Destination (IATA code)</label>
-          <input
-            className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="e.g. LHR"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value.toUpperCase())}
-          />
-        </div>
+      {error && <p className="text-red-500 mt-4">{error}</p>}
 
-        <div className="flex flex-col space-y-2">
-          <label className="font-semibold">Departure Date</label>
-          <input
-            type="date"
-            className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col space-y-2">
-          <label className="font-semibold">Adults</label>
-          <input
-            type="number"
-            min={1}
-            className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={adults}
-            onChange={(e) => setAdults(Number(e.target.value))}
-          />
-        </div>
-
-        {error && <p className="text-red-500">{error}</p>}
-
-        <button
-          onClick={searchFlights}
-          className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        >
-          {loading ? 'Searching...' : 'Search Flights'}
-        </button>
-      </div>
-
-      {/* Flight results */}
-      <div className="mt-8 w-full max-w-3xl space-y-4">
+      <motion.div
+        className="mt-10 w-full max-w-4xl space-y-6"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.1 } },
+        }}
+      >
         {flights.map((flight, idx) => (
-          <div key={idx} className="bg-white shadow-md rounded p-4 space-y-2">
-            <p className="font-semibold text-lg">
-              Price: {flight.price.total} {flight.price.currency}
-            </p>
-            {flight.itineraries.map((itinerary: any, i: number) => (
-              <div key={i} className="border-t pt-2 space-y-1">
-                {itinerary.segments.map((seg: any, j: number) => (
-                  <div key={j} className="flex justify-between text-sm">
-                    <span>
-                      {seg.departure.iataCode} → {seg.arrival.iataCode}
-                    </span>
-                    <span>
-                      {seg.departure.at.split('T')[1]} - {seg.arrival.at.split('T')[1]}
-                    </span>
-                    <span>{seg.carrier} {seg.flightNumber}</span>
-                    <span>{seg.duration.replace('PT', '')}</span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
+          <FlightCard key={idx} flight={flight} />
         ))}
-      </div>
+      </motion.div>
+
+      {loading && <p className="mt-6 text-secondary">Loading flights...</p>}
     </div>
   );
 }
