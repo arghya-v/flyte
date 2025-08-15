@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    const { origin, destination, date, adults } = req.query;
+    const { origin, destination, date, returnDate, adults } = req.query;
 
     if (!origin || !destination || !date) {
       res.status(400).json({ error: 'Missing required parameters' });
@@ -35,15 +35,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Step 1: Get token
     const tokenData = await getAccessToken();
 
-    // Step 2: Call flight offers search
-    const flightResponse = await fetch(
-      `${AMADEUS_API}/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=${destination}&departureDate=${date}&adults=${adults || 1}&max=20`,
-      {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`
-        }
+    // Step 2: Build API URL
+    let apiUrl = `${AMADEUS_API}/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=${destination}&departureDate=${date}&adults=${adults || 1}&max=20`;
+
+    // If user provided return date, include it
+    if (returnDate) {
+      apiUrl += `&returnDate=${returnDate}`;
+    }
+
+    // Step 3: Fetch flights
+    const flightResponse = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`
       }
-    );
+    });
 
     if (!flightResponse.ok) {
       const text = await flightResponse.text();
@@ -52,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const flights = await flightResponse.json();
 
-    // Step 3: Map to more detailed info
+    // Step 4: Map to detailed format
     const detailedFlights = (flights.data || []).map((f: any) => ({
       id: f.id,
       price: f.price,

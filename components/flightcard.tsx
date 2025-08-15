@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { useState, memo } from "react";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Segment = {
   departure: { iataCode: string; at: string };
@@ -7,7 +7,6 @@ type Segment = {
   carrier: string;
   flightNumber: string;
   duration: string;
-  co2?: string;
 };
 
 type Itinerary = {
@@ -17,98 +16,129 @@ type Itinerary = {
 type Flight = {
   price: { total: string; currency: string };
   itineraries: Itinerary[];
+  co2Emissions?: number;
 };
 
 type Props = {
   flight: Flight;
 };
 
-// Dynamic airline logo URL function using wway.io
-const getAirlineLogo = (carrier: string) =>
-  `http://img.wway.io/pics/root/${carrier}@png?exar=1&rs=fit:512:512`;
+export default function FlightCard({ flight }: Props) {
+  const [expanded, setExpanded] = useState(false);
 
-function FlightCardComponent({ flight }: Props) {
+  const firstSegment = flight.itineraries[0]?.segments[0];
+  const lastSegment =
+    flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1];
+  const airlineCode = firstSegment?.carrier || '';
+  const logoUrl = `http://img.wway.io/pics/root/${airlineCode}@png?exar=1&rs=fit:100:50`;
+
+  const formatTime = (timeStr: string) =>
+    timeStr ? timeStr.split('T')[1].slice(0, 5) : '';
+  const formatDuration = (dur: string) =>
+    dur ? dur.replace('PT', '').replace('H', 'h ').replace('M', 'm') : '';
+
+  const outboundStops = flight.itineraries[0]
+    ? flight.itineraries[0].segments.length - 1
+    : 0;
+  const inboundStops = flight.itineraries[1]
+    ? flight.itineraries[1].segments.length - 1
+    : null;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="bg-[rgba(22,10,45,0.7)] backdrop-blur-sm border border-[rgba(255,255,255,0.1)] shadow-lg rounded-2xl p-4 space-y-4 hover:shadow-2xl transition-all"
-    >
-      {/* Price */}
-      <div className="flex justify-between items-center mb-2">
-        <p className="font-bold text-lg text-white">
-          {flight.price.total} {flight.price.currency}
+  layout
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="bg-[rgba(22,10,45,0.5)] backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgba(66,2,180,0.3)] border border-[rgba(255,255,255,0.1)] overflow-hidden cursor-pointer hover:shadow-[0_12px_40px_rgba(66,2,180,0.4)] transition-shadow"
+  onClick={() => setExpanded(!expanded)}
+>
+  {/* Top summary row */}
+  <div className="flex items-center justify-between p-4">
+    {/* Airline info */}
+    <div className="flex items-center gap-3">
+      <img
+        src={logoUrl}
+        alt={airlineCode}
+        className="h-9 w-auto object-contain rounded-md bg-white p-1"
+      />
+      <div>
+        <p className="font-semibold text-white">
+          {firstSegment?.departure.iataCode} → {lastSegment?.arrival.iataCode}
+        </p>
+        <p className="text-sm text-gray-300">
+          {formatTime(firstSegment?.departure.at || '')} – {formatTime(lastSegment?.arrival.at || '')}
         </p>
       </div>
+    </div>
 
-      {/* Itineraries */}
-      {flight.itineraries.map((itinerary, i) => (
-        <div key={i} className="space-y-4 relative">
-          {itinerary.segments.map((seg, j) => {
-            const [logoSrc, setLogoSrc] = useState(getAirlineLogo(seg.carrier));
+    {/* Duration & stops */}
+    <div className="text-center text-white">
+      <p className="text-sm font-medium">
+        {formatDuration(firstSegment?.duration || '')}
+      </p>
+      <p className="text-xs text-gray-300">
+        {outboundStops === 0 ? 'Direct' : `${outboundStops} stop${outboundStops > 1 ? 's' : ''}`}
+      </p>
+    </div>
 
-            return (
-              <div key={j} className="flex items-center space-x-4 relative">
-                {/* Timeline Dot */}
-                <div className="flex flex-col items-center">
-                  <div className="w-3 h-3 bg-white rounded-full z-10"></div>
-                  {j < itinerary.segments.length - 1 && (
-                    <div className="w-0.5 flex-1 bg-gray-400/30"></div>
-                  )}
+    {/* Price */}
+    <div className="text-right text-white">
+      <p className="text-lg font-bold text-blue-400">
+        {flight.price.total} {flight.price.currency}
+      </p>
+      {flight.co2Emissions && (
+        <p className="text-xs text-green-400">
+          {flight.co2Emissions} kg CO₂
+        </p>
+      )}
+    </div>
+  </div>
+
+  {/* Expanded details */}
+  <AnimatePresence>
+    {expanded && (
+      <motion.div
+        key="details"
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: 'auto', opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="px-4 pb-4 border-t border-[rgba(255,255,255,0.1)]"
+      >
+        {flight.itineraries.map((itinerary, i) => (
+          <div key={i} className="mt-3 space-y-3">
+            <p className="font-semibold text-sm text-gray-300">
+              {i === 0 ? 'Outbound Flight' : 'Return Flight'}
+              {i === 1 && inboundStops !== null
+                ? ` • ${inboundStops === 0 ? 'Direct' : `${inboundStops} stop${inboundStops > 1 ? 's' : ''}`}`
+                : ''}
+            </p>
+            {itinerary.segments.map((seg, j) => (
+              <div
+                key={j}
+                className="flex justify-between items-center bg-[rgba(255,255,255,0.05)] p-2 rounded-md text-sm"
+              >
+                <div className="text-white">
+                  <p className="font-medium">
+                    {seg.departure.iataCode} → {seg.arrival.iataCode}
+                  </p>
+                  <p className="text-xs text-gray-300">
+                    {formatTime(seg.departure.at)} – {formatTime(seg.arrival.at)}
+                  </p>
                 </div>
-
-                {/* Segment Card */}
-                <div className="flex-1 bg-[rgba(66,2,180,0.2)] hover:bg-[rgba(66,2,180,0.4)] rounded-2xl p-3 transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  {/* Airline Logo */}
-                  <div className="flex items-center justify-center min-w-[80px]">
-                    <img
-                      src={logoSrc}
-                      alt={seg.carrier}
-                      className="h-20 w-20 object-contain bg-white p-1"
-                      onError={() =>
-                        setLogoSrc("https://via.placeholder.com/48x48?text=?")
-                      }
-                    />
-                  </div>
-
-                  {/* Flight Code */}
-                  <div className="flex flex-col items-start min-w-[80px]">
-                    <span className="text-white font-medium">
-                      {seg.carrier} {seg.flightNumber}
-                    </span>
-                  </div>
-
-                  {/* Route & Time */}
-                  <div className="flex flex-col items-center min-w-[160px]">
-                    <span className="text-white font-semibold">
-                      {seg.departure.iataCode} → {seg.arrival.iataCode}
-                    </span>
-                    <span className="text-gray-300 text-xs">
-                      {seg.departure.at.split("T")[1]} -{" "}
-                      {seg.arrival.at.split("T")[1]}
-                    </span>
-                  </div>
-
-                  {/* Duration */}
-                  <div className="min-w-[80px] text-center text-white font-medium">
-                    {seg.duration.replace("PT", "")}
-                  </div>
-
-                  {/* CO2 Emissions */}
-                  {seg.co2 && (
-                    <div className="min-w-[80px] text-center text-green-400 font-medium text-xs">
-                      {seg.co2} CO₂
-                    </div>
-                  )}
+                <div className="text-right text-white">
+                  <p className="text-xs text-gray-300">
+                    {seg.carrier} {seg.flightNumber}
+                  </p>
+                  <p className="text-xs">{formatDuration(seg.duration)}</p>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      ))}
-    </motion.div>
+            ))}
+          </div>
+        ))}
+      </motion.div>
+    )}
+  </AnimatePresence>
+</motion.div>
   );
 }
-
-export default memo(FlightCardComponent);
