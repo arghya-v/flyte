@@ -215,7 +215,7 @@ function AirportInput({
         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white" />
         <input
           type="text"
-          placeholder={`${label} (e.g. JFK)`}
+          placeholder={`${label} (IATA code)`}
           value={value}
           onChange={(e) => setValue(e.target.value.toUpperCase())}
           className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(22,10,45,0.5)] text-white placeholder:text-gray-400"
