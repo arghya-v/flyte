@@ -25,7 +25,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    const { origin, destination, date, returnDate, adults } = req.query;
+    const {
+      origin,
+      destination,
+      date,
+      returnDate,
+      adults,
+      children,
+      infants,
+      flightType,
+      serviceClass
+    } = req.query;
 
     if (!origin || !destination || !date) {
       res.status(400).json({ error: 'Missing required parameters' });
@@ -36,11 +46,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const tokenData = await getAccessToken();
 
     // Step 2: Build API URL
-    let apiUrl = `${AMADEUS_API}/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=${destination}&departureDate=${date}&adults=${adults || 1}&max=20`;
+    let apiUrl = `${AMADEUS_API}/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=${destination}&departureDate=${date}&max=20`;
 
-    // If user provided return date, include it
-    if (returnDate) {
+    // Passenger counts
+    apiUrl += `&adults=${adults || 1}`;
+    if (children) apiUrl += `&children=${children}`;
+    if (infants) apiUrl += `&infants=${infants}`;
+
+    // Trip type: only add returnDate if round-trip
+    if (flightType === 'roundTrip' && returnDate) {
       apiUrl += `&returnDate=${returnDate}`;
+    }
+
+    // Travel class normalization
+    const travelClassMap: Record<string, string> = {
+      economy: 'ECONOMY',
+      'premium economy': 'PREMIUM_ECONOMY',
+      business: 'BUSINESS',
+      first: 'FIRST',
+    };
+
+    if (serviceClass) {
+      const tc = travelClassMap[(serviceClass as string).toLowerCase()];
+      if (tc) {
+        apiUrl += `&travelClass=${tc}`;
+      }
     }
 
     // Step 3: Fetch flights
@@ -57,11 +87,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const flights = await flightResponse.json();
 
-    // Step 4: Map to detailed format
+    // Step 4: Map into detailed format (with per-passenger pricing)
     const detailedFlights = (flights.data || []).map((f: any) => ({
       id: f.id,
-      price: f.price,
+      price: f.price, // total price
+      travelers: f.travelerPricings?.map((tp: any) => ({
+        travelerId: tp.travelerId,
+        fareOption: tp.fareOption,
+        travelerType: tp.travelerType, // ADULT, CHILD, HELD_INFANT
+        price: tp.price
+      })),
       itineraries: f.itineraries.map((it: any) => ({
+        duration: it.duration,
         segments: it.segments.map((seg: any) => ({
           carrier: seg.carrierCode,
           flightNumber: seg.number,

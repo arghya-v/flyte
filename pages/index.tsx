@@ -6,7 +6,8 @@ import FlightCard from '@/components/flightcard';
 export default function Home() {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [date, setDate] = useState<Date | null>(null); // <-- changed to Date | null
+  const [date, setDate] = useState<Date | null>(null);
+  const [returnDate, setReturnDate] = useState<Date | null>(null);
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [infants, setInfants] = useState(0);
@@ -27,17 +28,41 @@ export default function Home() {
     setFlights([]);
 
     try {
-      // Convert date to YYYY-MM-DD string for API
+      // Format departure and return dates
       const formattedDate = date.toISOString().split('T')[0];
+      const formattedReturnDate =
+        returnDate && flightType === 'Round-trip'
+          ? returnDate.toISOString().split('T')[0]
+          : '';
 
-      const res = await fetch(
-        `/api/searchFlights?origin=${origin}&destination=${destination}&date=${formattedDate}&adults=${adults}&children=${children}&infants=${infants}&flightType=${flightType}&serviceClass=${serviceClass}`
-      );
+      const query = new URLSearchParams({
+        origin,
+        destination,
+        date: formattedDate,
+        adults: adults.toString(),
+        children: children.toString(),
+        infants: infants.toString(),
+        flightType,
+        serviceClass,
+      });
+
+      if (formattedReturnDate) {
+        query.append('returnDate', formattedReturnDate);
+      }
+
+      const res = await fetch(`/api/searchFlights?${query.toString()}`);
       const data = await res.json();
-      setFlights(data || []);
+
+      if (Array.isArray(data)) {
+        setFlights(data);
+      } else {
+        setError(data.error || 'Unexpected response from server.');
+        setFlights([]);
+      }
     } catch (err: any) {
       console.error(err);
       setError('Failed to fetch flights.');
+      setFlights([]);
     } finally {
       setLoading(false);
     }
@@ -45,9 +70,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0C041C] text-textPrimary font-inter flex flex-col items-center p-6">
-      <h1 className="text-5xl font-bold mb-10 text-center text-primary">
-        Flyte
-      </h1>
+      <h1 className="text-5xl font-bold mb-10 text-center text-primary">Flyte</h1>
 
       <SearchBar
         origin={origin}
@@ -56,6 +79,8 @@ export default function Home() {
         setDestination={setDestination}
         date={date}
         setDate={setDate}
+        returnDate={returnDate}
+        setReturnDate={setReturnDate}
         adults={adults}
         setAdults={setAdults}
         children={children}

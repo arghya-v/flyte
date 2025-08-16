@@ -21,6 +21,8 @@ type Props = {
   setDestination: React.Dispatch<React.SetStateAction<string>>;
   date: Date | null;
   setDate: React.Dispatch<React.SetStateAction<Date | null>>;
+  returnDate: Date | null;
+  setReturnDate: React.Dispatch<React.SetStateAction<Date | null>>;
   adults: number;
   setAdults: React.Dispatch<React.SetStateAction<number>>;
   children: number;
@@ -44,6 +46,8 @@ export default function SearchBar({
   setDestination,
   date,
   setDate,
+  returnDate,
+  setReturnDate,
   adults,
   setAdults,
   children,
@@ -56,7 +60,6 @@ export default function SearchBar({
   setServiceClass,
   onSearch,
 }: Props) {
-  const [returnDate, setReturnDate] = useState<Date | null>(null);
   const [originSuggestions, setOriginSuggestions] = useState<Airport[]>([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState<Airport[]>([]);
 
@@ -178,7 +181,7 @@ export default function SearchBar({
           {/* Departure Date */}
           <DateField label="Departure" date={date} setDate={setDate} />
 
-          {/* Return Date */}
+          {/* Return Date (only for round-trip) */}
           {flightType === "Round-trip" && <DateField label="Return" date={returnDate} setDate={setReturnDate} />}
 
           {/* Search Button */}
