@@ -21,8 +21,7 @@ async function getAccessToken() {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== 'GET') {
-      res.status(405).json({ error: 'Method not allowed' });
-      return;
+      return res.status(405).json({ error: 'Method not allowed' });
     }
 
     const {
@@ -38,23 +37,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } = req.query;
 
     if (!origin || !destination || !date) {
-      res.status(400).json({ error: 'Missing required parameters' });
-      return;
+      return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Step 1: Get token
+    // Step 1: Get access token
     const tokenData = await getAccessToken();
 
-    // Step 2: Build API URL
+    // Step 2: Build Amadeus API URL with correct param names
     let apiUrl = `${AMADEUS_API}/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=${destination}&departureDate=${date}&max=20`;
 
-    // Passenger counts
+    // Passenger counts with defaults
     apiUrl += `&adults=${adults || 1}`;
-    if (children) apiUrl += `&children=${children}`;
-    if (infants) apiUrl += `&infants=${infants}`;
+    apiUrl += `&children=${children || 0}`;
+    apiUrl += `&infants=${infants || 0}`;
 
-    // Trip type: only add returnDate if round-trip
-    if (flightType === 'roundTrip' && returnDate) {
+    // Round-trip logic
+    if ((flightType === 'roundTrip' || flightType === 'Round-trip') && returnDate) {
       apiUrl += `&returnDate=${returnDate}`;
     }
 
@@ -65,29 +63,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       business: 'BUSINESS',
       first: 'FIRST',
     };
-
     if (serviceClass) {
       const tc = travelClassMap[(serviceClass as string).toLowerCase()];
-      if (tc) {
-        apiUrl += `&travelClass=${tc}`;
-      }
+      if (tc) apiUrl += `&travelClass=${tc}`;
     }
 
-    // Step 3: Fetch flights
+    // Step 3: Fetch flights from Amadeus
     const flightResponse = await fetch(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`
-      }
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
     });
 
+    const text = await flightResponse.text();
     if (!flightResponse.ok) {
-      const text = await flightResponse.text();
       throw new Error('Failed to fetch flights: ' + text);
     }
 
-    const flights = await flightResponse.json();
+    const flights = JSON.parse(text);
 
-    // Step 4: Map into detailed format (with per-passenger pricing)
+    // Step 4: Transform into detailed format
     const detailedFlights = (flights.data || []).map((f: any) => ({
       id: f.id,
       price: f.price, // total price
