@@ -28,6 +28,8 @@ type Flight = {
 
 type Props = {
   flight: Flight;
+  currency?: string; // Selected currency (e.g., "CAD")
+  rates?: Record<string, number>; // Exchange rates { CAD: 1.3, EUR: 0.92, ... }
 };
 
 // --- Utils ---
@@ -85,7 +87,13 @@ function StopsLabel({ itin }: StopsLabelProps) {
 // Airline logo for segment cards
 function SegmentLogo({ carrier }: { carrier: string }) {
   const url = `http://img.wway.io/pics/root/${carrier}@png?exar=1&rs=fit:128:128`;
-  return <img src={url} alt={carrier} className="w-18 h-18 object-contain z-10" />;
+  return (
+    <img
+      src={url}
+      alt={carrier}
+      className="w-auto h-16 object-contain z-10 bg-white rounded-md p-2 border border-white/20"
+    />
+  );
 }
 
 type ItineraryPreviewProps = { itin: Itinerary };
@@ -107,13 +115,13 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
     <div className="flex items-center gap-6">
       {/* Departure */}
       <div className="text-center">
-        <div className="font-bold text-lg">{dep.time}</div>
-        <div className="text-gray-600 text-sm">{first?.departure.iataCode}</div>
+        <div className="font-bold text-lg text-white">{dep.time}</div>
+        <div className="text-gray-300 text-sm">{first?.departure.iataCode}</div>
       </div>
 
       {/* Timeline with plane */}
       <div className="flex-1 relative py-5">
-        <div className="h-px w-full bg-gray-300" />
+        <div className="h-px w-full bg-white/20" />
 
         {/* Stop dots */}
         {stopsCount > 0 &&
@@ -122,26 +130,28 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
             return (
               <div
                 key={i}
-                className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-pink-500 ring-2 ring-white shadow"
+                className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 
+                           h-3 w-3 rounded-full bg-pink-500 shadow-lg shadow-pink-500/50"
                 style={{ left: `${positionPercent}%` }}
               />
             );
           })}
 
-        {/* Plane icon pinned to right */}
+        {/* Plane icon */}
         <FaPlane
-          className="absolute left-full -translate-x-1/2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 z-10"
+          className="absolute left-full -translate-x-1/2 top-1/2 -translate-y-1/2 
+                     w-4 h-4 text-white z-10"
           aria-hidden="true"
         />
 
         {/* Duration above */}
-        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-xs text-gray-500 flex items-center gap-1">
+        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-xs text-gray-300 flex items-center gap-1">
           <Clock className="w-3 h-3" />
           {totalDur}
         </div>
 
         {/* Stops label below */}
-        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-sm text-gray-600">
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-sm text-gray-400">
           <span className="whitespace-nowrap">
             <StopsLabel itin={itin} />
           </span>
@@ -150,16 +160,17 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
 
       {/* Arrival */}
       <div className="text-center">
-        <div className="font-bold text-lg">
-          {arr.time} {rel && <span className="text-xs font-normal text-gray-500">{rel}</span>}
+        <div className="font-bold text-lg text-white">
+          {arr.time}{" "}
+          {rel && <span className="text-xs font-normal text-gray-400">{rel}</span>}
         </div>
-        <div className="text-gray-600 text-sm">{last?.arrival.iataCode}</div>
+        <div className="text-gray-300 text-sm">{last?.arrival.iataCode}</div>
       </div>
     </div>
   );
 }
 
-export default function FlightCard({ flight }: Props) {
+export default function FlightCard({ flight, currency, rates }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   const firstSegment = flight.itineraries?.[0]?.segments?.[0];
@@ -169,23 +180,37 @@ export default function FlightCard({ flight }: Props) {
   const emissionColor =
     flight.averageEmissions && flight.co2Emissions
       ? flight.co2Emissions < flight.averageEmissions
-        ? "text-green-500"
-        : "text-red-500"
-      : "text-gray-400";
+        ? "text-green-400"
+        : "text-red-400"
+      : "text-gray-500";
+
+  // --- Currency conversion ---
+  const convertedPrice = (() => {
+    if (!currency || !rates) return flight.price.total;
+    const base = parseFloat(flight.price.total); // assuming original price is in USD
+    const rate = rates[currency] || 1;
+    return (base * rate).toFixed(2);
+  })();
 
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 w-full max-w-5xl hover:shadow-md transition cursor-pointer"
+      className="rounded-2xl p-6 w-full max-w-5xl cursor-pointer 
+                 bg-white/10 backdrop-blur-lg border border-white/20 
+                 shadow-lg shadow-black/30 hover:shadow-xl transition"
       onClick={() => setExpanded(!expanded)}
     >
       {/* --- Summary / Preview --- */}
       <div className="flex justify-between items-stretch gap-4">
         {/* Left: logo + itineraries */}
         <div className="flex flex-1 gap-4 items-start">
-          <img src={logoUrl} alt={airlineCode} className="h-14 w-auto object-contain mt-6" />
+          <img
+            src={logoUrl}
+            alt={airlineCode}
+            className="h-14 w-auto object-contain mt-6 bg-white p-2 rounded-md"
+          />
           <div className="flex flex-col gap-4 flex-1">
             {flight.itineraries?.[0]?.segments?.length && (
               <ItineraryPreview itin={flight.itineraries[0]} />
@@ -198,14 +223,15 @@ export default function FlightCard({ flight }: Props) {
 
         {/* Right: price + CTA */}
         <div className="flex flex-col items-end justify-center gap-2 w-44">
-          <div className="text-xl font-bold text-gray-900">
-            {flight.price.total} {flight.price.currency}
+          <div className="text-2xl font-bold text-white drop-shadow">
+            {convertedPrice} {currency || flight.price.currency}
           </div>
           {flight.co2Emissions && (
             <p className={`text-xs ${emissionColor}`}>{flight.co2Emissions} kg CO₂e</p>
           )}
           <button
-            className="bg-blue-700 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-800 transition"
+            className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 
+                       rounded-lg font-semibold hover:bg-white/30 transition"
             onClick={(e) => e.stopPropagation()}
           >
             See Deals →
@@ -222,13 +248,13 @@ export default function FlightCard({ flight }: Props) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="px-2 pb-4 border-t border-gray-200 mt-4"
+            className="px-2 pb-4 border-t border-white/20 mt-4"
           >
             {(flight.itineraries ?? []).map((itinerary, i) => {
               const segs = itinerary.segments ?? [];
               return (
                 <div key={i} className="mt-4 space-y-6">
-                  <p className="font-semibold text-sm text-gray-600">
+                  <p className="font-semibold text-sm text-white/80">
                     {i === 0 ? "Outbound Flight" : "Inbound Flight"}
                   </p>
 
@@ -238,34 +264,39 @@ export default function FlightCard({ flight }: Props) {
                     const hasNext = j < segs.length - 1;
                     return (
                       <div key={j} className="flex gap-4">
-                        {/* Logo replaces vertical line */}
+                        {/* Airline logo */}
                         <div className="flex flex-col items-center">
                           <SegmentLogo carrier={seg.carrier} />
-                          
                         </div>
 
                         {/* Segment card */}
                         <div className="flex-1">
-                          <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                          <div
+                            className="flex justify-between items-center 
+                                          bg-white/10 backdrop-blur-md 
+                                          p-3 rounded-xl border border-white/20"
+                          >
                             <div>
-                              <p className="font-medium text-gray-800">
-                                {dep.time} {seg.departure.iataCode} – {arr.time} {seg.arrival.iataCode}
+                              <p className="font-medium text-white">
+                                {dep.time} {seg.departure.iataCode} – {arr.time}{" "}
+                                {seg.arrival.iataCode}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-300">
                                 {dep.date} → {arr.date}
                               </p>
                             </div>
 
                             <div className="text-center">
-                              <p className="text-sm font-medium text-gray-700">
+                              <p className="text-sm font-medium text-white">
                                 {seg.carrier} {seg.flightNumber}
                               </p>
-                              <p className="text-xs text-gray-500">
-                                {seg.aircraft || "Aircraft TBA"} • {formatDuration(seg.duration)}
+                              <p className="text-xs text-gray-300">
+                                {seg.aircraft || "Aircraft TBA"} •{" "}
+                                {formatDuration(seg.duration)}
                               </p>
                             </div>
 
-                            <div className="flex gap-2 text-gray-500">
+                            <div className="flex gap-2 text-gray-300">
                               <Wifi size={14} />
                               <Plug size={14} />
                               <Tv size={14} />
@@ -275,9 +306,12 @@ export default function FlightCard({ flight }: Props) {
 
                           {/* Layover row */}
                           {hasNext && (
-                            <div className="text-center text-xs text-gray-500 mt-1">
-                              {calcLayover(segs[j].arrival.at, segs[j + 1].departure.at)} –{" "}
-                              {segs[j + 1].departure.iataCode}
+                            <div className="text-center text-sm text-gray-400 mt-5">
+                              {calcLayover(
+                                segs[j].arrival.at,
+                                segs[j + 1].departure.at
+                              )}{" "}
+                              – {segs[j + 1].departure.iataCode}
                             </div>
                           )}
                         </div>
