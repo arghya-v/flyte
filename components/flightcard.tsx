@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wifi, Plug, Tv, Armchair, Clock } from "lucide-react";
 import { FaPlane } from "react-icons/fa";
+import { getAirportName, getAirportCity } from "@/utils/airportLookup";
 
 // --- Types ---
 type Segment = {
@@ -28,8 +29,8 @@ type Flight = {
 
 type Props = {
   flight: Flight;
-  currency?: string; // Selected currency (e.g., "CAD")
-  rates?: Record<string, number>; // Exchange rates { CAD: 1.3, EUR: 0.92, ... }
+  currency?: string;
+  rates?: Record<string, number>;
 };
 
 // --- Utils ---
@@ -79,12 +80,13 @@ function StopsLabel({ itin }: StopsLabelProps) {
   const firstStop = segments[0]?.arrival.iataCode;
   return (
     <>
-      {stops} stop{stops > 1 ? "s" : ""} {firstStop ? firstStop : ""}
+      {stops} stop{stops > 1 ? "s" : ""}{" "}
+      {firstStop ? getAirportCity(firstStop) || firstStop : ""}
     </>
   );
 }
 
-// Airline logo for segment cards
+// Airline logo
 function SegmentLogo({ carrier }: { carrier: string }) {
   const url = `http://img.wway.io/pics/root/${carrier}@png?exar=1&rs=fit:128:128`;
   return (
@@ -96,6 +98,7 @@ function SegmentLogo({ carrier }: { carrier: string }) {
   );
 }
 
+// Preview row (collapsed card)
 type ItineraryPreviewProps = { itin: Itinerary };
 function ItineraryPreview({ itin }: ItineraryPreviewProps) {
   const segments = itin?.segments ?? [];
@@ -116,14 +119,15 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
       {/* Departure */}
       <div className="text-center">
         <div className="font-bold text-lg text-white">{dep.time}</div>
-        <div className="text-gray-300 text-sm">{first?.departure.iataCode}</div>
+        <div className="text-gray-300 text-sm">
+          {first?.departure.iataCode} • {getAirportCity(first?.departure.iataCode)}
+        </div>
       </div>
 
       {/* Timeline with plane */}
       <div className="flex-1 relative py-5">
         <div className="h-px w-full bg-white/20" />
 
-        {/* Stop dots */}
         {stopsCount > 0 &&
           Array.from({ length: stopsCount }).map((_, i) => {
             const positionPercent = ((i + 1) / (stopsCount + 1)) * 100;
@@ -137,24 +141,18 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
             );
           })}
 
-        {/* Plane icon */}
         <FaPlane
           className="absolute left-full -translate-x-1/2 top-1/2 -translate-y-1/2 
                      w-4 h-4 text-white z-10"
-          aria-hidden="true"
         />
 
-        {/* Duration above */}
         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-xs text-gray-300 flex items-center gap-1">
           <Clock className="w-3 h-3" />
           {totalDur}
         </div>
 
-        {/* Stops label below */}
         <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-sm text-gray-400">
-          <span className="whitespace-nowrap">
-            <StopsLabel itin={itin} />
-          </span>
+          <StopsLabel itin={itin} />
         </div>
       </div>
 
@@ -164,7 +162,9 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
           {arr.time}{" "}
           {rel && <span className="text-xs font-normal text-gray-400">{rel}</span>}
         </div>
-        <div className="text-gray-300 text-sm">{last?.arrival.iataCode}</div>
+        <div className="text-gray-300 text-sm">
+          {last?.arrival.iataCode} • {getAirportCity(last?.arrival.iataCode)}
+        </div>
       </div>
     </div>
   );
@@ -184,10 +184,9 @@ export default function FlightCard({ flight, currency, rates }: Props) {
         : "text-red-400"
       : "text-gray-500";
 
-  // --- Currency conversion ---
   const convertedPrice = (() => {
     if (!currency || !rates) return flight.price.total;
-    const base = parseFloat(flight.price.total); // assuming original price is in USD
+    const base = parseFloat(flight.price.total);
     const rate = rates[currency] || 1;
     return (base * rate).toFixed(2);
   })();
@@ -204,7 +203,6 @@ export default function FlightCard({ flight, currency, rates }: Props) {
     >
       {/* --- Summary / Preview --- */}
       <div className="flex justify-between items-stretch gap-4">
-        {/* Left: logo + itineraries */}
         <div className="flex flex-1 gap-4 items-start">
           <img
             src={logoUrl}
@@ -221,13 +219,14 @@ export default function FlightCard({ flight, currency, rates }: Props) {
           </div>
         </div>
 
-        {/* Right: price + CTA */}
         <div className="flex flex-col items-end justify-center gap-2 w-44">
           <div className="text-2xl font-bold text-white drop-shadow">
             {convertedPrice} {currency || flight.price.currency}
           </div>
           {flight.co2Emissions && (
-            <p className={`text-xs ${emissionColor}`}>{flight.co2Emissions} kg CO₂e</p>
+            <p className={`text-xs ${emissionColor}`}>
+              {flight.co2Emissions} kg CO₂e
+            </p>
           )}
           <button
             className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 
@@ -264,12 +263,10 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                     const hasNext = j < segs.length - 1;
                     return (
                       <div key={j} className="flex gap-4">
-                        {/* Airline logo */}
                         <div className="flex flex-col items-center">
                           <SegmentLogo carrier={seg.carrier} />
                         </div>
 
-                        {/* Segment card */}
                         <div className="flex-1">
                           <div
                             className="flex justify-between items-center 
@@ -278,8 +275,10 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                           >
                             <div>
                               <p className="font-medium text-white">
-                                {dep.time} {seg.departure.iataCode} – {arr.time}{" "}
-                                {seg.arrival.iataCode}
+                                {dep.time} {seg.departure.iataCode} •{" "}
+                                {getAirportName(seg.departure.iataCode)} → {arr.time}{" "}
+                                {seg.arrival.iataCode} •{" "}
+                                {getAirportName(seg.arrival.iataCode)}
                               </p>
                               <p className="text-xs text-gray-300">
                                 {dep.date} → {arr.date}
@@ -304,14 +303,13 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                             </div>
                           </div>
 
-                          {/* Layover row */}
                           {hasNext && (
                             <div className="text-center text-sm text-gray-400 mt-5">
                               {calcLayover(
                                 segs[j].arrival.at,
                                 segs[j + 1].departure.at
                               )}{" "}
-                              – {segs[j + 1].departure.iataCode}
+                              – {getAirportCity(segs[j + 1].departure.iataCode)}
                             </div>
                           )}
                         </div>
