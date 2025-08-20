@@ -88,12 +88,12 @@ function StopsLabel({ itin }: StopsLabelProps) {
 
 // Airline logo
 function SegmentLogo({ carrier }: { carrier: string }) {
-  const url = `http://img.wway.io/pics/root/${carrier}@png?exar=1&rs=fit:128:128`;
+  const url = `http://img.wway.io/pics/root/${carrier}@png?exar=1&rs=fit:256:256`;
   return (
     <img
       src={url}
       alt={carrier}
-      className="w-auto h-16 object-contain z-10 bg-white rounded-md p-2 border border-white/20"
+      className="h-15 w-24 object-cover z-10 bg-white rounded-md p-2"
     />
   );
 }
@@ -118,7 +118,7 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
     <div className="flex items-center gap-6">
       {/* Departure */}
       <div className="text-center">
-        <div className="font-bold text-lg text-white">{dep.time}</div>
+        <div className="font-bold text-lg">{dep.time}</div>
         <div className="text-gray-300 text-sm">
           {first?.departure.iataCode} • {getAirportCity(first?.departure.iataCode)}
         </div>
@@ -197,7 +197,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl p-6 w-full max-w-5xl cursor-pointer 
-                 bg-white/10 backdrop-blur-lg border border-white/20 
+                 bg-blue-950/20 backdrop-blur-lg border border-white/20 
                  shadow-lg shadow-black/30 hover:shadow-xl transition"
       onClick={() => setExpanded(!expanded)}
     >
@@ -233,7 +233,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                        rounded-lg font-semibold hover:bg-white/30 transition"
             onClick={(e) => e.stopPropagation()}
           >
-            See Deals →
+            Learn More →
           </button>
         </div>
       </div>
@@ -247,72 +247,152 @@ export default function FlightCard({ flight, currency, rates }: Props) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="px-2 pb-4 border-t border-white/20 mt-4"
+            className="px-2 pb-6 border-t border-white/10 mt-4"
           >
             {(flight.itineraries ?? []).map((itinerary, i) => {
               const segs = itinerary.segments ?? [];
               return (
-                <div key={i} className="mt-4 space-y-6">
-                  <p className="font-semibold text-sm text-white/80">
-                    {i === 0 ? "Outbound Flight" : "Inbound Flight"}
+                <div key={i} className="mt-6 space-y-5">
+                  <p className="font-semibold text-4xl text-white text-center">
+                    {i === 0 ? "⮦ Outbound Flight ⮧" : "⮦ Inbound Flight ⮧"}
                   </p>
 
                   {segs.map((seg, j) => {
                     const dep = formatDateTime(seg.departure.at);
                     const arr = formatDateTime(seg.arrival.at);
                     const hasNext = j < segs.length - 1;
+
                     return (
-                      <div key={j} className="flex gap-4">
-                        <div className="flex flex-col items-center">
-                          <SegmentLogo carrier={seg.carrier} />
-                        </div>
-
-                        <div className="flex-1">
-                          <div
-                            className="flex justify-between items-center 
-                                          bg-white/10 backdrop-blur-md 
-                                          p-3 rounded-xl border border-white/20"
-                          >
-                            <div>
-                              <p className="font-medium text-white">
-                                {dep.time} {seg.departure.iataCode} •{" "}
-                                {getAirportName(seg.departure.iataCode)} → {arr.time}{" "}
-                                {seg.arrival.iataCode} •{" "}
-                                {getAirportName(seg.arrival.iataCode)}
-                              </p>
-                              <p className="text-xs text-gray-300">
-                                {dep.date} → {arr.date}
-                              </p>
-                            </div>
-
-                            <div className="text-center">
-                              <p className="text-sm font-medium text-white">
-                                {seg.carrier} {seg.flightNumber}
-                              </p>
-                              <p className="text-xs text-gray-300">
-                                {seg.aircraft || "Aircraft TBA"} •{" "}
-                                {formatDuration(seg.duration)}
-                              </p>
-                            </div>
-
-                            <div className="flex gap-2 text-gray-300">
-                              <Wifi size={14} />
-                              <Plug size={14} />
-                              <Tv size={14} />
-                              <Armchair size={14} />
-                            </div>
+                      <div key={j}>
+                        {/* Flight segment card */}
+                        <div
+                          className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-lg"
+                          style={{ background: "rgba(12, 19, 46, 0.6)" }}
+                        >
+                          {/* Airline Logo on top right */}
+                          <div className="absolute top-33 right-6">
+                            <SegmentLogo carrier={seg.carrier} />
                           </div>
 
-                          {hasNext && (
-                            <div className="text-center text-sm text-gray-400 mt-5">
-                              {calcLayover(
-                                segs[j].arrival.at,
-                                segs[j + 1].departure.at
-                              )}{" "}
-                              – {getAirportCity(segs[j + 1].departure.iataCode)}
+                          <div className="flex justify-between gap-8">
+                            {/* LEFT COLUMN */}
+                            <div className="flex flex-col items-start">
+                              {/* Departure */}
+                              <div className="flex items-center ml-0.5">
+                                <svg
+                                  width="64"
+                                  height="64"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  className="text-blue-400"
+                                >
+                                  <path
+                                    d="M7 17L17 7M17 7H7M17 7V17"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                                <div>
+                                  <div className="text-5xl font-bold text-white mt-5 mr-5">
+                                    {seg.departure.iataCode}
+                                  </div>
+                                  <div className="text-md text-gray-300 ml-1">
+                                    {getAirportName(seg.departure.iataCode)} (
+                                    {getAirportCity(seg.departure.iataCode)})
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Vertical flight line */}
+                              <div className="flex flex-col items-center flex-1">
+                                <div className="w-px h-10 bg-gradient-to-b from-white to-gray-400"></div>
+                                <div className="relative transform -translate-x-1 -translate-y-1">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-10 text-white my-3"
+                                    fill="white"
+                                    viewBox="0 0 20 20"
+                                    transform="rotate(180)"
+                                  >
+                                    <path d="M6.428 1.151C6.708.591 7.213 0 8 0s1.292.592 1.572 1.151C9.861 1.73 10 2.431 10 3v3.691l5.17 2.585a1.5 1.5 0 0 1 .83 1.342V12a.5.5 0 0 1-.582.493l-5.507-.918-.375 2.253 1.318 1.318A.5.5 0 0 1 10.5 16h-5a.5.5 0 0 1-.354-.854l1.319-1.318-.376-2.253-5.507.918A.5.5 0 0 1 0 12v-1.382a1.5 1.5 0 0 1 .83-1.342L6 6.691V3c0-.568.14-1.271.428-1.849" />
+                                  </svg>
+                                </div>
+                                <div className="w-px h-10 bg-gradient-to-b from-gray-400 to-white"></div>
+                              </div>
+
+                              {/* Arrival */}
+                              <div className="flex items-center ">
+                                <svg
+                                  width="64"
+                                  height="64"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  className="rotate-90 text-green-400"
+                                >
+                                  <path
+                                    d="M7 17L17 7M17 7H7M17 7V17"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                                <div>
+                                  <div className="text-5xl font-bold text-white">
+                                    {seg.arrival.iataCode}
+                                  </div>
+                                  <div className="text-md text-gray-300">
+                                    {getAirportName(seg.arrival.iataCode)} (
+                                    {getAirportCity(seg.arrival.iataCode)})
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          )}
+
+                            {/* RIGHT COLUMN */}
+                            <div className="flex flex-col text-right flex-1">
+                              <div className="mb-8">
+                                <div className="text-gray-300 text-sm">
+                                  {dep.date}
+                                </div>
+                                <div className="text-2xl font-medium text-green-400">
+                                  {dep.time}
+                                </div>
+                                <div className="text-sm text-gray-400 mt-1">
+                                  {seg.carrier} {seg.flightNumber}
+                                </div>
+                                <div className="text-sm text-gray-400 mb-3 font-semibold">
+                                  {seg.aircraft || "Aircraft TBA"}
+                                </div>
+                              </div>
+
+                              <div className="mt-auto">
+                                <div className="flex justify-end gap-3 mb-2 text-gray-300">
+                                  <Wifi size={18} />
+                                  <Plug size={18} />
+                                  <Tv size={18} />
+                                  <Armchair size={18} />
+                                </div>
+                                <div className="text-2xl font-medium text-green-400">
+                                  {arr.time}
+                                </div>
+                                <div className="text-gray-400 text-sm">
+                                  {arr.date}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
+
+                        {/* Layover OUTSIDE card */}
+                        {hasNext && (
+                          <div className="text-center text-sm text-gray-400 my-4">
+                            {calcLayover(seg.arrival.at, segs[j + 1].departure.at)}{" "}
+                            – {getAirportCity(segs[j + 1].departure.iataCode)}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
