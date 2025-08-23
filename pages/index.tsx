@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import SearchBar from "@/components/searchbar";
 import FlightCard from "@/components/flightcard";
 import CurrencySelector from "@/components/currency";
+import LoadingSpinner from "@/components/loading"; 
 
 export default function Home() {
   const [origin, setOrigin] = useState("");
@@ -121,7 +122,12 @@ export default function Home() {
               ))}
             </motion.div>
 
-            {loading && <p className="mt-6 text-secondary">Loading flights...</p>}
+            
+            {loading && (
+              <div className="mt-10 flex justify-center">
+                <LoadingSpinner />
+              </div>
+            )}
           </>
         )}
       </CurrencySelector>

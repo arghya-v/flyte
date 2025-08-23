@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wifi, Plug, Tv, Armchair, Clock } from "lucide-react";
 import { FaPlane } from "react-icons/fa";
 import { getAirportName, getAirportCity } from "@/utils/airportLookup";
+import aircraftData from "@/data/aircraft.json";
 
 // --- Types ---
 type Segment = {
@@ -70,7 +71,10 @@ const formatTotalDurationHM = (from?: string, to?: string) => {
   const m = mins % 60;
   return `${h}h ${m}m`;
 };
-
+const aircraftMap: Record<string, string> = aircraftData as Record<
+  string,
+  string
+>;
 // --- UI helpers ---
 type StopsLabelProps = { itin: Itinerary };
 function StopsLabel({ itin }: StopsLabelProps) {
@@ -79,7 +83,7 @@ function StopsLabel({ itin }: StopsLabelProps) {
 
   if (stops === 0) return <>Non-stop</>;
 
-  const stopCodes = segments.slice(0, -1).map(seg => seg.arrival.iataCode);
+  const stopCodes = segments.slice(0, -1).map((seg) => seg.arrival.iataCode);
 
   return (
     <>
@@ -91,6 +95,11 @@ function StopsLabel({ itin }: StopsLabelProps) {
         : ""}
     </>
   );
+}
+
+function getAircraftName(code?: string) {
+  if (!code) return "Aircraft TBA";
+  return aircraftMap[code] || code; // fallback to code if missing
 }
 
 // Airline logo
@@ -127,7 +136,8 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
       <div className="text-center">
         <div className="font-bold text-lg">{dep.time}</div>
         <div className="text-gray-300 text-sm">
-          {first?.departure.iataCode} • {getAirportCity(first?.departure.iataCode)}
+          {first?.departure.iataCode} •{" "}
+          {getAirportCity(first?.departure.iataCode)}
         </div>
       </div>
 
@@ -144,7 +154,6 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
                 className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 
                            h-3 w-3 rounded-full bg-pink-500 shadow-lg shadow-pink-500/50"
                 style={{ left: `${positionPercent}%` }}
-                
               />
             );
           })}
@@ -168,7 +177,9 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
       <div className="text-center">
         <div className="font-bold text-lg text-white">
           {arr.time}{" "}
-          {rel && <span className="text-xs font-normal text-gray-400">{rel}</span>}
+          {rel && (
+            <span className="text-xs font-normal text-gray-400">{rel}</span>
+          )}
         </div>
         <div className="text-gray-300 text-sm">
           {last?.arrival.iataCode} • {getAirportCity(last?.arrival.iataCode)}
@@ -192,12 +203,24 @@ export default function FlightCard({ flight, currency, rates }: Props) {
         : "text-red-400"
       : "text-gray-500";
 
-  const convertedPrice = (() => {
-    if (!currency || !rates) return flight.price.total;
-    const base = parseFloat(flight.price.total);
-    const rate = rates[currency] || 1;
-    return (base * rate).toFixed(2);
-  })();
+ const convertedPrice = useMemo(() => {
+  if (!currency || !rates) return flight.price.total;
+
+  const base = parseFloat(flight.price.total); 
+  const flightCurrency = flight.price.currency || "USD";
+
+  
+  const priceInUSD = flightCurrency === "USD" ? base : base / (rates[flightCurrency] || 1);
+
+  const rate = rates[currency] || 1;
+  const converted = priceInUSD * rate;
+
+  // Format with commas and 2 decimal places
+   return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: currency,
+  }).format(converted);
+}, [flight.price.total, flight.price.currency, currency, rates]);
 
   return (
     <motion.div
@@ -228,7 +251,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
         </div>
 
         <div className="flex flex-col items-end justify-center gap-2 w-44">
-          <div className="text-2xl font-bold text-white drop-shadow">
+          <div className="text-xl font-semibold text-white drop-shadow">
             {convertedPrice} {currency || flight.price.currency}
           </div>
           {flight.co2Emissions && (
@@ -278,7 +301,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                           style={{ background: "rgba(12, 19, 46, 0.6)" }}
                         >
                           {/* Airline Logo on top right */}
-                          <div className="absolute top-33 right-6">
+                          <div className="absolute top-33.5 right-8">
                             <SegmentLogo carrier={seg.carrier} />
                           </div>
 
@@ -359,7 +382,6 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                               </div>
                             </div>
 
-                            {/* RIGHT COLUMN */}
                             <div className="flex flex-col text-right flex-1">
                               <div className="mb-8">
                                 <div className="text-gray-300 text-sm">
@@ -372,7 +394,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                                   {seg.carrier} {seg.flightNumber}
                                 </div>
                                 <div className="text-sm text-gray-400 mb-3 font-semibold">
-                                  {seg.aircraft || "Aircraft TBA"}
+                                  {getAircraftName(seg.aircraft)}
                                 </div>
                               </div>
 
@@ -383,6 +405,12 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                                   <Tv size={18} />
                                   <Armchair size={18} />
                                 </div>
+
+    
+                                <div className="text-sm text-gray-400 mb-1">
+                                  {formatDuration(seg.duration)}
+                                </div>
+
                                 <div className="text-2xl font-medium text-green-400">
                                   {arr.time}
                                 </div>
@@ -397,10 +425,12 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                         {/* Layover OUTSIDE card */}
                         {hasNext && (
                           <div className="text-center text-sm text-gray-400 my-4">
-                            {calcLayover(seg.arrival.at, segs[j + 1].departure.at)}{" "}
+                            {calcLayover(
+                              seg.arrival.at,
+                              segs[j + 1].departure.at
+                            )}{" "}
                             – {getAirportCity(segs[j + 1].departure.iataCode)} (
-                              {segs[j + 1].departure.iataCode}
-                            )
+                            {segs[j + 1].departure.iataCode})
                           </div>
                         )}
                       </div>
