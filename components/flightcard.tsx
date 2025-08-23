@@ -76,12 +76,19 @@ type StopsLabelProps = { itin: Itinerary };
 function StopsLabel({ itin }: StopsLabelProps) {
   const segments = itin?.segments ?? [];
   const stops = Math.max(0, segments.length - 1);
+
   if (stops === 0) return <>Non-stop</>;
-  const firstStop = segments[0]?.arrival.iataCode;
+
+  const stopCodes = segments.slice(0, -1).map(seg => seg.arrival.iataCode);
+
   return (
     <>
       {stops} stop{stops > 1 ? "s" : ""}{" "}
-      {firstStop ? getAirportCity(firstStop) || firstStop : ""}
+      {stops === 1
+        ? getAirportCity(stopCodes[0]) || stopCodes[0]
+        : stops === 2
+        ? stopCodes.join(", ")
+        : ""}
     </>
   );
 }
@@ -137,6 +144,7 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
                 className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 
                            h-3 w-3 rounded-full bg-pink-500 shadow-lg shadow-pink-500/50"
                 style={{ left: `${positionPercent}%` }}
+                
               />
             );
           })}
@@ -390,7 +398,9 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                         {hasNext && (
                           <div className="text-center text-sm text-gray-400 my-4">
                             {calcLayover(seg.arrival.at, segs[j + 1].departure.at)}{" "}
-                            – {getAirportCity(segs[j + 1].departure.iataCode)}
+                            – {getAirportCity(segs[j + 1].departure.iataCode)} (
+                              {segs[j + 1].departure.iataCode}
+                            )
                           </div>
                         )}
                       </div>

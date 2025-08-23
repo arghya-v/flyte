@@ -36,7 +36,7 @@ type Props = {
   onSearch: (params: any) => Promise<void>;
 };
 
-const flightTypes = ["Round-trip", "One-way", "Multi-city"];
+const flightTypes = ["Round-trip", "One-way",];
 const serviceClasses = ["Economy", "Premium Economy", "Business", "First"];
 
 export default function SearchBar({
@@ -98,18 +98,18 @@ export default function SearchBar({
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
-      <div className="relative rounded-2xl p-6 bg-[rgba(22,10,45,0.5)] backdrop-blur-md shadow-[0_8px_30px_rgba(66,2,180,0.3)] border border-[rgba(255,255,255,0.1)] overflow-visible">
+      <div className="relative rounded-2xl p-6 bg-[#0E0A27] backdrop-blur-md border border-[rgba(255,255,255,0.1)] overflow-visible">
         {/* Top row */}
         <div className="flex flex-wrap gap-4 items-center mb-6">
           {/* Flight Type */}
           <Listbox value={flightType} onChange={setFlightType}>
             <div className="relative w-40">
-              <Listbox.Button className="w-full h-12 px-3 rounded-lg bg-[rgba(22,10,45,0.6)] text-gray-300 flex justify-between items-center">
+              <Listbox.Button className="w-full h-12 px-3 rounded-lg bg-[#0D112F] text-gray-300 flex justify-between items-center border border-[rgba(255,255,255,0.1)]">
                 {flightType}
                 <ChevronDown className="w-4 h-4" />
               </Listbox.Button>
               <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                <Listbox.Options className="absolute mt-1 w-full bg-[rgba(22,10,45,0.8)] rounded-lg shadow-lg text-white z-50">
+                <Listbox.Options className="absolute mt-1 w-full bg-[#0D112F] rounded-lg shadow-lg text-white z-50">
                   {flightTypes.map((type) => (
                     <Listbox.Option
                       key={type}
@@ -127,12 +127,12 @@ export default function SearchBar({
           {/* Service Class */}
           <Listbox value={serviceClass} onChange={setServiceClass}>
             <div className="relative w-48">
-              <Listbox.Button className="w-full h-12 px-3 rounded-lg bg-[rgba(22,10,45,0.6)] text-gray-300 flex justify-between items-center">
+              <Listbox.Button className="w-full h-12 px-3 rounded-lg bg-[#0D112F] text-gray-300 flex border border-[rgba(255,255,255,0.1)] justify-between items-center">
                 {serviceClass}
                 <ChevronDown className="w-4 h-4" />
               </Listbox.Button>
               <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                <Listbox.Options className="absolute mt-1 w-full bg-[rgba(22,10,45,0.8)] rounded-lg shadow-lg text-white z-50">
+                <Listbox.Options className="absolute mt-1 w-full bg-[#0D112F] rounded-lg shadow-lg text-white z-50">
                   {serviceClasses.map((cls) => (
                     <Listbox.Option
                       key={cls}
@@ -187,7 +187,7 @@ export default function SearchBar({
           {/* Search Button */}
           <button
             onClick={handleSearch}
-            className="h-12 px-8 bg-[#4202B4] hover:bg-violet-950 text-white font-medium rounded-lg shadow-md flex items-center"
+            className="h-12 px-8 bg-[#0E0A27] hover:bg-[#0D112F] transition text-white font-medium rounded-lg shadow-[0_8px_30px_rgba(66,2,180,0.2)] border border-[rgba(255,255,255,0.1)] flex items-center"
           >
             <Search className="h-4 w-4 mr-2" />
             Search Flights
@@ -215,13 +215,13 @@ function AirportInput({
     <div className="relative flex-1 min-w-[200px]">
       <label className="block text-sm font-medium text-white mb-2">{label}</label>
       <div className="relative">
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white" />
+        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
         <input
           type="text"
           placeholder={`${label} (IATA code)`}
           value={value}
           onChange={(e) => setValue(e.target.value.toUpperCase())}
-          className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(22,10,45,0.5)] text-white placeholder:text-gray-400"
+          className="w-full h-12 pl-10 pr-4 rounded-lg bg-[#0D112F] border border-[rgba(255,255,255,0.1)] text-gray-300 placeholder:text-gray-400"
         />
       </div>
       {suggestions.length > 0 && (
@@ -260,13 +260,13 @@ function DateField({
     <div className="min-w-[160px] relative">
       <label className="block text-sm font-medium text-white mb-2">{label}</label>
       <div className="relative">
-        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white" />
+        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 z-5" />
         <DatePicker
           selected={date}
           onChange={(d: Date | null) => setDate(d)}
           placeholderText={`Select ${label.toLowerCase()} date`}
-          className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(22,10,45,0.5)] text-white"
-          calendarClassName="bg-[rgba(22,10,45,0.8)] text-white"
+          className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(13,17,47,1)] border border-[rgba(255,255,255,0.1)] text-gray-300"
+          calendarClassName="bg-[rgba(13,17,47,1)] text-white"
           dayClassName={() => "text-white hover:bg-[#4202B4] rounded-full"}
         />
       </div>

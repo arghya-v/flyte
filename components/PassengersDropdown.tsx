@@ -74,7 +74,7 @@ export default function PassengersDropdown({
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        className="flex items-center justify-between min-w-[140px] h-12 px-4 py-3 bg-[rgba(22,10,45,0.5)] backdrop-blur-sm hover:bg-[rgba(66,2,180,0.2)] text-gray-300 rounded-lg transition"
+        className="flex items-center justify-between min-w-[140px] h-12 px-4 py-3 bg-[#0D112F] backdrop-blur-sm hover:bg-[rgba(66,2,180,0.2)] border border-[rgba(255,255,255,0.1)] text-gray-300 rounded-lg transition"
       >
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-gray-400" />
@@ -88,7 +88,7 @@ export default function PassengersDropdown({
           <div
             ref={dropdownRef} // important to prevent closing when clicking inside
             style={{ top: dropdownPos.top, left: dropdownPos.left }}
-            className="absolute w-72 bg-[rgba(22,10,45,0.7)] backdrop-blur-md border border-[rgba(255,255,255,0.1)] rounded-lg shadow-lg z-50"
+            className="absolute w-72 bg-[#0D112F] backdrop-blur-md border border-[rgba(255,255,255,0.1)] rounded-lg shadow-lg z-50"
           >
             <div className="p-4 space-y-4">
               <PassengerRow
