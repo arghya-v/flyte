@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo} from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wifi, Plug, Tv, Armchair, Clock } from "lucide-react";
 import { FaPlane } from "react-icons/fa";
@@ -75,6 +75,7 @@ const aircraftMap: Record<string, string> = aircraftData as Record<
   string,
   string
 >;
+
 // --- UI helpers ---
 type StopsLabelProps = { itin: Itinerary };
 function StopsLabel({ itin }: StopsLabelProps) {
@@ -194,6 +195,12 @@ export default function FlightCard({ flight, currency, rates }: Props) {
 
   const firstSegment = flight.itineraries?.[0]?.segments?.[0];
   const airlineCode = firstSegment?.carrier || "";
+  const flightNumber = firstSegment?.flightNumber || "0000";
+  const departureDate = firstSegment?.departure?.at || "unknown";
+
+  // ✅ Create unique flightId slug
+  const flightId = `${airlineCode}-${flightNumber}-${departureDate}`;
+
   const logoUrl = `http://img.wway.io/pics/root/${airlineCode}@png?exar=1&rs=fit:200:100`;
 
   const emissionColor =
@@ -203,24 +210,24 @@ export default function FlightCard({ flight, currency, rates }: Props) {
         : "text-red-400"
       : "text-gray-500";
 
- const convertedPrice = useMemo(() => {
-  if (!currency || !rates) return flight.price.total;
+  const convertedPrice = useMemo(() => {
+    if (!currency || !rates) return flight.price.total;
 
-  const base = parseFloat(flight.price.total); 
-  const flightCurrency = flight.price.currency || "USD";
+    const base = parseFloat(flight.price.total);
+    const flightCurrency = flight.price.currency || "USD";
 
-  
-  const priceInUSD = flightCurrency === "USD" ? base : base / (rates[flightCurrency] || 1);
+    const priceInUSD =
+      flightCurrency === "USD" ? base : base / (rates[flightCurrency] || 1);
 
-  const rate = rates[currency] || 1;
-  const converted = priceInUSD * rate;
+    const rate = rates[currency] || 1;
+    const converted = priceInUSD * rate;
 
-  // Format with commas and 2 decimal places
-   return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currency,
-  }).format(converted);
-}, [flight.price.total, flight.price.currency, currency, rates]);
+    // Format with commas and 2 decimal places
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currency,
+    }).format(converted);
+  }, [flight.price.total, flight.price.currency, currency, rates]);
 
   return (
     <motion.div
@@ -259,13 +266,22 @@ export default function FlightCard({ flight, currency, rates }: Props) {
               {flight.co2Emissions} kg CO₂e
             </p>
           )}
+
+          {/* ✅ Learn More navigates to /flight/[id] */}
           <button
-            className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 
-                       rounded-lg font-semibold hover:bg-white/30 transition"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Learn More →
-          </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    // Save flight data to localStorage
+    localStorage.setItem("selectedFlight", JSON.stringify(flight));
+
+    // Navigate to dynamic page
+    window.location.href = `/flight/${encodeURIComponent(flightId)}`;
+  }}
+  className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 
+             rounded-lg font-semibold hover:bg-white/30 transition"
+>
+  Learn More →
+</button>
         </div>
       </div>
 
