@@ -34,3 +34,10 @@ export function getAirportName(iata: string) {
 export function getAirportCity(iata: string) {
   return airportByIATA[iata]?.city || "";
 }
+
+export function getAirportCoords(iata: string) {
+  const airport = airportByIATA[iata];
+  return airport && airport.lat && airport.lon
+    ? { lat: airport.lat, lon: airport.lon }
+    : { lat: 0, lon: 0 };
+}

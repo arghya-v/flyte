@@ -10,19 +10,23 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
+    "@turf/turf": "^7.2.0",
     "framer-motion": "^12.23.12",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.539.0",
+    "mapbox-gl": "^3.14.0",
     "next": "15.4.6",
     "react": "19.1.0",
     "react-datepicker": "^8.4.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "react-map-gl": "^8.0.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.20",
+    "@types/mapbox-gl": "^3.4.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
