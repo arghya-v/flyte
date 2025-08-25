@@ -4,9 +4,16 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Wifi, Plug, Tv, Armchair } from "lucide-react";
-import { getAirportName, getAirportCity, getAirportCoords} from "@/utils/airportLookup";
+import {
+  getAirportName,
+  getAirportCity,
+  getAirportCoords,
+} from "@/utils/airportLookup";
 import aircraftData from "@/data/aircraft.json";
-import AirportMap from "@/components/FlightMap";
+const AirportMap = dynamic(() => import("../../components/FlightMap"), {
+  ssr: false,
+});
+import dynamic from "next/dynamic";
 
 // --- helpers (reused from FlightCard) ---
 const formatDateTime = (dateStr: string) => {
@@ -232,24 +239,26 @@ export default function FlightDetails() {
         );
       })}
       <AirportMap
-  airports={(flight.itineraries ?? [])
-    .flatMap((it: any) => it.segments ?? [])
-    .map((seg: any) => [
-      {
-        code: seg.departure.iataCode,
-        name: getAirportName(seg.departure.iataCode),
-        city: getAirportCity(seg.departure.iataCode),
-        ...getAirportCoords(seg.departure.iataCode),
-      },
-      {
-        code: seg.arrival.iataCode,
-        name: getAirportName(seg.arrival.iataCode),
-        city: getAirportCity(seg.arrival.iataCode),
-        ...getAirportCoords(seg.arrival.iataCode),
-      },
-    ])
-    .flat()}
-/>
+        airports={(flight.itineraries ?? [])
+          .flatMap((it: any) => it.segments ?? [])
+          .flatMap((seg: any) => [
+            {
+              code: seg.departure.iataCode,
+              name: getAirportName(seg.departure.iataCode),
+              city: getAirportCity(seg.departure.iataCode),
+              ...getAirportCoords(seg.departure.iataCode),
+            },
+            {
+              code: seg.arrival.iataCode,
+              name: getAirportName(seg.arrival.iataCode),
+              city: getAirportCity(seg.arrival.iataCode),
+              ...getAirportCoords(seg.arrival.iataCode),
+            },
+          ])}
+        routes={(flight.itineraries ?? [])
+          .flatMap((it: any) => it.segments ?? [])
+          .map((seg: any) => [seg.departure.iataCode, seg.arrival.iataCode])}
+      />
     </div>
   );
 }

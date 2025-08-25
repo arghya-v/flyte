@@ -8,17 +8,23 @@ import "leaflet-curve";
 // --- Custom Icon ---
 const airportIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/9333/9333912.png",
-  iconSize: [30, 30],
-  iconAnchor: [15, 20],
-  popupAnchor: [0, -28],
+  iconSize: [35, 35],
+  iconAnchor: [18, 35],
+  popupAnchor: [0, -30],
 });
 
 export default function LeafletMap({
-  airports,
-  routes,
+  airports = [],   
+  routes = [],     
 }: {
-  airports: { code: string; name: string; city: string; lat: number; lon: number }[];
-  routes: [string, string][];
+  airports?: {
+    code: string;
+    name: string;
+    city: string;
+    lat: number;
+    lon: number;
+  }[];
+  routes?: [string, string][];
 }) {
   useEffect(() => {
     if (!airports || airports.length === 0) return;
@@ -43,13 +49,12 @@ export default function LeafletMap({
         .bindPopup(`<b>${airport.name}</b><br/>${airport.city}`);
     });
 
-    // Draw arcs only for routes you specify
-    routes.forEach(([fromCode, toCode]) => {
+    // Draw arcs
+    routes?.forEach(([fromCode, toCode]) => {
       const a = airports.find((ap) => ap.code === fromCode);
       const b = airports.find((ap) => ap.code === toCode);
       if (!a || !b) return;
 
-      // midpoint for the curve (shift lat to “lift” the arc)
       const latMid = (a.lat + b.lat) / 2 + 10;
       const lonMid = (a.lon + b.lon) / 2;
 
