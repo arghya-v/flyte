@@ -8,17 +8,27 @@ import "leaflet-curve";
 // --- Custom Icon ---
 const airportIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/9333/9333912.png",
-  iconSize: [30, 30],
-  iconAnchor: [15, 20],
-  popupAnchor: [0, -28],
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+  popupAnchor: [0, -30],
 });
 
-export default function LeafletMap({
-  airports,
-  routes,
+export default function FlightMap({
+  airports = [],
+  routes = [],
 }: {
-  airports: { code: string; name: string; city: string; lat: number; lon: number }[];
-  routes: [string, string][];
+  airports?: {
+    code: string;
+    name: string;
+    city: string;
+    lat: number;
+    lon: number;
+  }[];
+  routes?: {
+    from: string;
+    to: string;
+    itineraryIndex: number;
+  }[];
 }) {
   useEffect(() => {
     if (!airports || airports.length === 0) return;
@@ -36,26 +46,27 @@ export default function LeafletMap({
       }
     ).addTo(map);
 
-    // Add markers
+    // Add airport markers
     airports.forEach((airport) => {
       L.marker([airport.lat, airport.lon], { icon: airportIcon })
         .addTo(map)
         .bindPopup(`<b>${airport.name}</b><br/>${airport.city}`);
     });
 
-    // Draw arcs only for routes you specify
-    routes.forEach(([fromCode, toCode]) => {
-      const a = airports.find((ap) => ap.code === fromCode);
-      const b = airports.find((ap) => ap.code === toCode);
+    // Draw flight arcs, color by itineraryIndex
+    routes?.forEach(({ from, to, itineraryIndex }) => {
+      const a = airports.find((ap) => ap.code === from);
+      const b = airports.find((ap) => ap.code === to);
       if (!a || !b) return;
 
-      // midpoint for the curve (shift lat to “lift” the arc)
-      const latMid = (a.lat + b.lat) / 2 + 10;
+      const latMid = (a.lat + b.lat) / 2 + 10; // lift the curve
       const lonMid = (a.lon + b.lon) / 2;
+
+      const lineColor = itineraryIndex === 0 ? "limegreen" : "deepskyblue";
 
       (L as any).curve(
         ["M", [a.lat, a.lon], "Q", [latMid, lonMid], [b.lat, b.lon]],
-        { color: "deepskyblue", weight: 2 }
+        { color: lineColor, weight: 2 }
       ).addTo(map);
     });
 
@@ -64,5 +75,5 @@ export default function LeafletMap({
     };
   }, [airports, routes]);
 
-  return <div id="map" style={{ height: "500px", width: "100%" }} />;
+  return <div id="map" style={{ height: "500px", width: "100%", borderRadius: "20px", overflow: 'hidden' }} />;
 }

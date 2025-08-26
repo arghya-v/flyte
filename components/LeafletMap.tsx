@@ -14,8 +14,8 @@ const airportIcon = new L.Icon({
 });
 
 export default function LeafletMap({
-  airports = [],   
-  routes = [],     
+  airports = [],
+  routes = [],
 }: {
   airports?: {
     code: string;
@@ -24,7 +24,11 @@ export default function LeafletMap({
     lat: number;
     lon: number;
   }[];
-  routes?: [string, string][];
+  routes?: {
+    from: string;
+    to: string;
+    itineraryIndex: number;
+  }[];
 }) {
   useEffect(() => {
     if (!airports || airports.length === 0) return;
@@ -42,25 +46,42 @@ export default function LeafletMap({
       }
     ).addTo(map);
 
-    // Add markers
+    // Add airport markers
     airports.forEach((airport) => {
       L.marker([airport.lat, airport.lon], { icon: airportIcon })
         .addTo(map)
         .bindPopup(`<b>${airport.name}</b><br/>${airport.city}`);
     });
 
-    // Draw arcs
-    routes?.forEach(([fromCode, toCode]) => {
-      const a = airports.find((ap) => ap.code === fromCode);
-      const b = airports.find((ap) => ap.code === toCode);
+    // Draw flight arcs with conditional coloring
+    routes?.forEach(({ from, to, itineraryIndex }) => {
+      const a = airports.find((ap) => ap.code === from);
+      const b = airports.find((ap) => ap.code === to);
       if (!a || !b) return;
 
+      // midpoint for curve
       const latMid = (a.lat + b.lat) / 2 + 10;
       const lonMid = (a.lon + b.lon) / 2;
 
+      let lineColor = "limegreen"; // default for unique legs
+
+      if (itineraryIndex === 0) {
+        // Outbound: check if inbound exists with reversed direction
+        const matchingReturn = routes.some(
+          (r) => r.itineraryIndex === 1 && r.from === to && r.to === from
+        );
+        if (matchingReturn) lineColor = "deepskyblue";
+      } else if (itineraryIndex === 1) {
+        // Inbound: check if outbound exists with reversed direction
+        const matchingOutbound = routes.some(
+          (r) => r.itineraryIndex === 0 && r.from === to && r.to === from
+        );
+        if (matchingOutbound) lineColor = "deepskyblue";
+      }
+
       (L as any).curve(
         ["M", [a.lat, a.lon], "Q", [latMid, lonMid], [b.lat, b.lon]],
-        { color: "deepskyblue", weight: 2 }
+        { color: lineColor, weight: 2 }
       ).addTo(map);
     });
 

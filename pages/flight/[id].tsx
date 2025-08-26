@@ -10,12 +10,13 @@ import {
   getAirportCoords,
 } from "@/utils/airportLookup";
 import aircraftData from "@/data/aircraft.json";
+import dynamic from "next/dynamic";
+
 const AirportMap = dynamic(() => import("../../components/FlightMap"), {
   ssr: false,
 });
-import dynamic from "next/dynamic";
 
-// --- helpers (reused from FlightCard) ---
+// --- helpers ---
 const formatDateTime = (dateStr: string) => {
   if (!dateStr) return { time: "", date: "" };
   const d = new Date(dateStr);
@@ -36,10 +37,8 @@ const calcLayover = (arrive: string, depart: string) => {
   return `${hrs > 0 ? hrs + "h " : ""}${mins}m layover`;
 };
 
-const aircraftMap: Record<string, string> = aircraftData as Record<
-  string,
-  string
->;
+const aircraftMap: Record<string, string> = aircraftData as Record<string, string>;
+
 function getAircraftName(code?: string) {
   if (!code) return "Aircraft TBA";
   return aircraftMap[code] || code;
@@ -75,6 +74,35 @@ export default function FlightDetails() {
 
   if (!flight)
     return <p className="p-6 text-white">Loading flight details...</p>;
+
+  // --- Map Data ---
+  const airports = (flight.itineraries ?? [])
+    .flatMap((it: any) => it.segments ?? [])
+    .flatMap((seg: any) => [
+      {
+        code: seg.departure.iataCode,
+        name: getAirportName(seg.departure.iataCode),
+        city: getAirportCity(seg.departure.iataCode),
+        ...getAirportCoords(seg.departure.iataCode),
+      },
+      {
+        code: seg.arrival.iataCode,
+        name: getAirportName(seg.arrival.iataCode),
+        city: getAirportCity(seg.arrival.iataCode),
+        ...getAirportCoords(seg.arrival.iataCode),
+      },
+    ]);
+
+  const routes = (flight.itineraries ?? []).flatMap(
+    (itinerary: any, idx: number) =>
+      (itinerary.segments ?? []).map((seg: any) => ({
+        from: seg.departure.iataCode,
+        to: seg.arrival.iataCode,
+        itineraryIndex: idx, // 0 = outbound, 1 = return
+      }))
+  );
+
+  console.log("routes array:", routes); // check outbound vs return
 
   return (
     <div className="absolute top-5 left-5 max-w-3xl w-full p-6 text-white">
@@ -134,7 +162,7 @@ export default function FlightDetails() {
                             </div>
                             <div className="text-md text-gray-300 ml-1">
                               {getAirportName(seg.departure.iataCode)} (
-                              {getAirportCity(seg.departure.iataCode)})
+                              {getAirportCity(seg.departure.iataCode)} )
                             </div>
                           </div>
                         </div>
@@ -179,7 +207,7 @@ export default function FlightDetails() {
                             </div>
                             <div className="text-md text-gray-300 ml-1">
                               {getAirportName(seg.arrival.iataCode)} (
-                              {getAirportCity(seg.arrival.iataCode)})
+                              {getAirportCity(seg.arrival.iataCode)} )
                             </div>
                           </div>
                         </div>
@@ -188,9 +216,7 @@ export default function FlightDetails() {
                       {/* RIGHT: Times / Extras */}
                       <div className="flex flex-col text-right flex-1">
                         <div className="mb-8">
-                          <div className="text-gray-300 text-sm">
-                            {dep.date}
-                          </div>
+                          <div className="text-gray-300 text-sm">{dep.date}</div>
                           <div className="text-2xl font-medium text-green-400">
                             {dep.time}
                           </div>
@@ -216,9 +242,7 @@ export default function FlightDetails() {
                           <div className="text-2xl font-medium text-green-400">
                             {arr.time}
                           </div>
-                          <div className="text-gray-400 text-sm">
-                            {arr.date}
-                          </div>
+                          <div className="text-gray-400 text-sm">{arr.date}</div>
                         </div>
                       </div>
                     </div>
@@ -238,27 +262,9 @@ export default function FlightDetails() {
           </div>
         );
       })}
-      <AirportMap
-        airports={(flight.itineraries ?? [])
-          .flatMap((it: any) => it.segments ?? [])
-          .flatMap((seg: any) => [
-            {
-              code: seg.departure.iataCode,
-              name: getAirportName(seg.departure.iataCode),
-              city: getAirportCity(seg.departure.iataCode),
-              ...getAirportCoords(seg.departure.iataCode),
-            },
-            {
-              code: seg.arrival.iataCode,
-              name: getAirportName(seg.arrival.iataCode),
-              city: getAirportCity(seg.arrival.iataCode),
-              ...getAirportCoords(seg.arrival.iataCode),
-            },
-          ])}
-        routes={(flight.itineraries ?? [])
-          .flatMap((it: any) => it.segments ?? [])
-          .map((seg: any) => [seg.departure.iataCode, seg.arrival.iataCode])}
-      />
+
+      {/* Flight Map */}
+      <AirportMap airports={airports} routes={routes} />
     </div>
   );
 }
