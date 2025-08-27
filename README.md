@@ -11,8 +11,9 @@
   <li><a href="#api-integration">API Integration</a></li>
   <li><a href="#components">Components</a></li>
   <li><a href="#future-improvements">Future Improvements</a></li>
+  <li><a href="#ai-assistance">AI Assistance</a></li>
   <li><a href="#license">License</a></li>
-  <li><a href="#ai-assistance">License</a></li>
+  
 </ul>
 
 <h2 id="features">Features</h2>
