@@ -11,7 +11,7 @@ import {
 } from "@/utils/airportLookup";
 import aircraftData from "@/data/aircraft.json";
 import dynamic from "next/dynamic";
-
+import FlightacDetails from "@/components/flight&acDetails";
 const AirportMap = dynamic(() => import("../../components/FlightMap"), {
   ssr: false,
 });
@@ -135,7 +135,7 @@ export default function FlightDetails() {
                     <div className="absolute top-33.5 right-8">
                       <SegmentLogo carrier={seg.carrier} />
                     </div>
-
+                    <FlightacDetails callsign={seg.carrier + seg.flightNumber}  />
                     <div className="flex justify-between gap-8">
                       {/* LEFT: Departure / Arrival */}
                       <div className="flex flex-col items-start">
@@ -265,6 +265,7 @@ export default function FlightDetails() {
 
       {/* Flight Map */}
       <AirportMap airports={airports} routes={routes} />
+      
     </div>
   );
 }
