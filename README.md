@@ -93,6 +93,16 @@ NEXT_PUBLIC_EXCHANGE_API_KEY=your_key_here
   
 </ul>
 
+<h2 id="ai-assistance">AI Assistance</h2>
+<p>This project leverages <strong>AI tools</strong> to help streamline development, including:</p>
+<ul>
+  <li>Researching and identifying suitable flight-related APIs, such as Amadeus, for flight offers, seat maps, and amenities.</li>
+  <li>Generating and debugging base code for components, utility functions, and page structures.</li>
+  <li>Optimizing project structure and suggesting best practices for TypeScript and Next.js integration.</li>
+  <li>Providing guidance on UI/UX implementation, including smooth animations and responsive layouts.</li>
+</ul>
+<p>AI assistance helped speed up simple and basic development while allowing me to focus on feature design, testing, and customization.</p>
+
 <h2 id="license">License</h2>
 <p>This project is licensed under the MIT License.</p>
 
