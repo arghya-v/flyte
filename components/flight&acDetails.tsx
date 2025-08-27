@@ -85,8 +85,6 @@ export default function FlightacDetails({ callsign }: { callsign: string }) {
   }, [callsign]);
 
   return (
-    <div className="p-4 text-sm text-gray-400">
-      Fetching <b>{callsign}</b>… (check console)
-    </div>
+    <p></p>
   );
 }

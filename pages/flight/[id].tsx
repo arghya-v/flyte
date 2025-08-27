@@ -66,36 +66,55 @@ export default function FlightDetails() {
 
   // Fetch flight review video
   useEffect(() => {
-  if (!id) return;
+    if (!id || !flight) return;
 
-  // Ensure it's a string, not array
-  let flightCode = Array.isArray(id) ? id[0] : id;
+    // Ensure it's a string, not array
+    let flightCode = Array.isArray(id) ? id[0] : id;
 
-  // Strip date/time if present: "WS-425-2025-09-06T12:00:00" -> "WS425"
-  const parts = flightCode.split("-");
-  if (parts.length >= 2) flightCode = parts[0] + parts[1];
+    // Strip date/time if present: "WS-425-2025-09-06T12:00:00" -> "WS425"
+    const parts = flightCode.split("-");
+    if (parts.length >= 2) flightCode = parts[0] + parts[1];
 
-  async function fetchVideo() {
-    try {
-      const res = await fetch(`/api/getFlightVideo?flightCode=${encodeURIComponent(flightCode)}`);
-      const text = await res.text();
+    // Pull airline + service class
+    const airline = flight.validatingAirlineCodes?.[0] || "";
+    const serviceClass =
+      flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin || "";
 
-      let data;
+    // Normalize cabin name for YouTube query
+    const prettyClass =
+      serviceClass.toLowerCase() === "economy"
+        ? "economy"
+        : serviceClass
+        ? serviceClass.toLowerCase() + " class"
+        : "";
+
+    async function fetchVideo() {
       try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("Response not JSON:", text);
-        return;
+        const res = await fetch(
+          `/api/getFlightVideo?flightCode=${encodeURIComponent(
+            flightCode
+          )}&airline=${encodeURIComponent(airline)}&serviceClass=${encodeURIComponent(
+            prettyClass
+          )}`
+        );
+
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          console.error("Response not JSON:", text);
+          return;
+        }
+
+        setVideoId(data.videoId);
+      } catch (err) {
+        console.error("Error fetching video:", err);
       }
-
-      setVideoId(data.videoId);
-    } catch (err) {
-      console.error("Error fetching video:", err);
     }
-  }
 
-  fetchVideo();
-}, [id]);
+    fetchVideo();
+  }, [id, flight]);
 
   if (!flight) return <p className="p-6 text-white">Loading flight details...</p>;
 
