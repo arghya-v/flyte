@@ -21,10 +21,8 @@
   <li>Dynamic Currency Conversion (USD, CAD, EUR, GBP, INR, JPY)</li>
   <li>Airport Information: name, city, and coordinates</li>
   <li>Flight Amenities: WiFi, power outlets, TVs, legroom info</li>
-  <li>Seat Maps showing availability</li>
   <li>Smooth animations with <strong>Framer Motion</strong></li>
-  <li>Responsive design for desktop and mobile</li>
-  <li>Interactive modals for flight details or impact stories</li>
+  <li>Responsive design for desktop</li>
 </ul>
 
 <h2 id="tech-stack">Tech Stack</h2>
@@ -80,6 +78,7 @@ NEXT_PUBLIC_EXCHANGE_API_KEY=your_key_here
   <li><strong>Search Bar</strong>: Handles all information required to search for flights</li>
   <li><strong>Flight Map and Leaflet Map</strong>: Map out flight route</li>
   <li> <strong>Loading</strong>: Loading UI</li>
+  
 </ul>
 
 <h2 id="future-improvements">Future Improvements</h2>
@@ -89,6 +88,8 @@ NEXT_PUBLIC_EXCHANGE_API_KEY=your_key_here
   <li>Better front-end UX/UI past the "Learn More" button</li>
   <li>Price alerts for users</li>
   <li>CO2 emissions</li>
+  <li>Airplane Images</li>
+  <li>Improved UI for mobile</li>
   
 </ul>
 
