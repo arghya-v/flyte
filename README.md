@@ -1,44 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Search Engine - README</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      margin: 2rem;
-      color: #333;
-    }
-    h1, h2, h3, h4 {
-      color: #111;
-    }
-    pre {
-      background: #f4f4f4;
-      padding: 1rem;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-    code {
-      background: #f4f4f4;
-      padding: 2px 4px;
-      border-radius: 3px;
-    }
-    ul {
-      margin-bottom: 1rem;
-    }
-    a {
-      color: #0070f3;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-
 <h1>Flight Search Engine</h1>
 <p>A modern, responsive flight search engine built with <strong>Next.js</strong>, <strong>TypeScript</strong>, and <strong>React</strong>, featuring real-time flight data, dynamic currency conversion, airport information, and amenities display.</p>
 
@@ -46,7 +5,6 @@
 <ul>
   <li><a href="#features">Features</a></li>
   <li><a href="#tech-stack">Tech Stack</a></li>
-  <li><a href="#project-structure">Project Structure</a></li>
   <li><a href="#installation">Installation</a></li>
   <li><a href="#environment-variables">Environment Variables</a></li>
   <li><a href="#usage">Usage</a></li>
@@ -78,35 +36,9 @@
   <li>Deployment: Vercel</li>
 </ul>
 
-<h2 id="project-structure">Project Structure</h2>
-<pre>
-/flight-search-engine
-├─ /components
-│  ├─ FlightCard.tsx
-│  ├─ CurrencySelector.tsx
-│  ├─ ProfileCard.tsx
-│  ├─ AboutParagraph.tsx
-│  └─ Modal.tsx
-├─ /pages
-│  ├─ index.tsx
-│  ├─ search.tsx
-│  └─ _app.tsx
-├─ /utils
-│  ├─ airportLookup.ts
-│  ├─ currencyConversion.ts
-│  └─ flightHelpers.ts
-├─ /data
-│  ├─ aircraft.json
-│  └─ airports.json
-├─ /styles
-│  └─ globals.css
-├─ next.config.js
-└─ package.json
-</pre>
-
 <h2 id="installation">Installation</h2>
 <pre>
-git clone https://github.com/yourusername/flight-search-engine.git
+git clone https://github.com/arghya-v/flyte.git
 cd flight-search-engine
 npm install
 npm run dev
@@ -117,25 +49,27 @@ npm run dev
 <pre>
 NEXT_PUBLIC_AMADEUS_CLIENT_ID=your_client_id
 NEXT_PUBLIC_AMADEUS_CLIENT_SECRET=your_client_secret
-NEXT_PUBLIC_DEFAULT_CURRENCY=USD
+NEXT_PUBLIC_EXCHANGE_API_KEY=your_key_here
 </pre>
-<p>Use Amadeus sandbox credentials for testing; production credentials are required for real flight data.</p>
+<p>Use Amadeus sandbox credentials for testing and playing around; production credentials are required for real flight data.</p>
 
 <h2 id="usage">Usage</h2>
 <ul>
   <li>Select departure and arrival airports</li>
   <li>Choose travel dates and number of passengers</li>
   <li>Click <strong>Search Flights</strong> to retrieve available flights</li>
-  <li>View flight amenities, aircraft info, and seat maps</li>
+  <li>View flight amenities, aircraft info</li>
   <li>Switch currencies dynamically to view price conversions</li>
+  <li>Flight Route Map</li>
 </ul>
 
 <h2 id="api-integration">API Integration</h2>
 <ul>
   <li>Amadeus Flight Offers API: Fetch available flights</li>
-  <li>Amadeus Seat Map API: Display seat availability</li>
   <li>Custom Airport Lookup: name, city, coordinates from JSON</li>
   <li>Aircraft Lookup: Map aircraft codes to readable names</li>
+  <li>Exchange Rate API: Used for converting currency</li>
+  
 </ul>
 <p>Ensure credentials and environment variables are set correctly. API calls are rate-limited.</p>
 
@@ -143,17 +77,19 @@ NEXT_PUBLIC_DEFAULT_CURRENCY=USD
 <ul>
   <li><strong>FlightCard</strong>: Displays flight details, duration, and layover info</li>
   <li><strong>CurrencySelector</strong>: Allows users to select currency for price conversion</li>
-  <li><strong>Modal</strong>: Reusable modal for flight details or impact stories</li>
-  <li><strong>ProfileCard & AboutParagraph</strong>: Reusable components for user profiles or content</li>
+  <li><strong>Search Bar</strong>: Handles all information required to search for flights</li>
+  <li><strong>Flight Map and Leaflet Map</strong>: Map out flight route</li>
+  <li> <strong>Loading</strong>: Loading UI</li>
 </ul>
 
 <h2 id="future-improvements">Future Improvements</h2>
 <ul>
   <li>Multi-city flight search</li>
   <li>Better caching of API data to reduce requests</li>
-  <li>Interactive seat maps with seat selection</li>
+  <li>Better front-end UX/UI past the "Learn More" button</li>
   <li>Price alerts for users</li>
-  <li>Integration with payment systems for bookings</li>
+  <li>CO2 emissions</li>
+  
 </ul>
 
 <h2 id="license">License</h2>
