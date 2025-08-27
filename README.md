@@ -39,7 +39,7 @@
 <h2 id="installation">Installation</h2>
 <pre>
 git clone https://github.com/arghya-v/flyte.git
-cd flight-search-engine
+cd flyte
 npm install
 npm run dev
 </pre>
