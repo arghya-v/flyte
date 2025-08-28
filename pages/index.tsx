@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import SearchBar from "@/components/searchbar";
 import FlightCard from "@/components/flightcard";
 import CurrencySelector from "@/components/currency";
 import LoadingSpinner from "@/components/loading"; 
+import Header from "@/components/header";
+import Link from "next/link";
 
 export default function Home() {
   const [origin, setOrigin] = useState("");
@@ -20,6 +22,27 @@ export default function Home() {
   const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // --- Scroll state for header ---
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const searchFlights = async () => {
     if (!origin || !destination || !date) {
@@ -72,65 +95,99 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0C041C] text-textPrimary font-inter flex flex-col items-center p-6">
-      <h1 className="text-5xl font-bold mb-10 text-center text-primary">Flyte</h1>
-
-      {/* Currency Selector */}
+    <div className="min-h-screen bg-[#0C041C] text-textPrimary font-inter flex flex-col">
       <CurrencySelector>
         {(currency, rates) => (
           <>
-            <SearchBar
-              origin={origin}
-              setOrigin={setOrigin}
-              destination={destination}
-              setDestination={setDestination}
-              date={date}
-              setDate={setDate}
-              returnDate={returnDate}
-              setReturnDate={setReturnDate}
-              adults={adults}
-              setAdults={setAdults}
-              children={children}
-              setChildren={setChildren}
-              infants={infants}
-              setInfants={setInfants}
-              flightType={flightType}
-              setFlightType={setFlightType}
-              serviceClass={serviceClass}
-              setServiceClass={setServiceClass}
-              onSearch={searchFlights}
-            />
-
-            {error && <p className="text-red-500 mt-4">{error}</p>}
-
+            {/* Animated header */}
             <motion.div
-              className="mt-10 w-full max-w-4xl space-y-6"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.1 } },
-              }}
+              initial={{ y: 0 }}
+              animate={{ y: showHeader ? 0 : -100 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="fixed top-0 left-0 w-full bg-[#0C041C] z-50 shadow-md"
             >
-              {flights.map((flight, idx) => (
-                <FlightCard
-                  key={idx}
-                  flight={flight}
-                  currency={currency}
-                  rates={rates}
-                />
-              ))}
+              <div className="flex w-full max-w-6xl mx-auto justify-between items-center p-4">
+                <Header />
+              </div>
             </motion.div>
 
-            
-            {loading && (
-              <div className="mt-10 flex justify-center">
-                <LoadingSpinner />
-              </div>
-            )}
+            {/* Main content */}
+            <main className="mt-24 flex-1 flex flex-col items-center p-6">
+              <SearchBar
+                origin={origin}
+                setOrigin={setOrigin}
+                destination={destination}
+                setDestination={setDestination}
+                date={date}
+                setDate={setDate}
+                returnDate={returnDate}
+                setReturnDate={setReturnDate}
+                adults={adults}
+                setAdults={setAdults}
+                children={children}
+                setChildren={setChildren}
+                infants={infants}
+                setInfants={setInfants}
+                flightType={flightType}
+                setFlightType={setFlightType}
+                serviceClass={serviceClass}
+                setServiceClass={setServiceClass}
+                onSearch={searchFlights}
+              />
+
+              {error && <p className="text-red-500 mt-4">{error}</p>}
+
+              <motion.div
+                className="mt-10 w-full max-w-4xl space-y-6"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: {},
+                  visible: { transition: { staggerChildren: 0.1 } },
+                }}
+              >
+                {flights.map((flight, idx) => (
+                  <FlightCard
+                    key={idx}
+                    flight={flight}
+                    currency={currency}
+                    rates={rates}
+                  />
+                ))}
+              </motion.div>
+
+              {loading && (
+                <div className="mt-10 flex justify-center">
+                  <LoadingSpinner />
+                </div>
+              )}
+            </main>
           </>
         )}
       </CurrencySelector>
+
+      {/* Footer stuck at bottom */}
+      <footer className="backdrop-blur-md bg-blue-950/5 border-t border-white/10 w-full mt-auto z-40">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-gray-400">
+            © {new Date().getFullYear()} Flyte. This project is under the MIT License.
+          </p>
+          <div className="flex gap-6 text-sm">
+            <Link href="/about" className="hover:text-blue-400 transition">
+              About
+            </Link>
+            <Link href="/search" className="hover:text-blue-400 transition">
+              Search Flights
+            </Link>
+            <Link href="/contact" className="hover:text-blue-400 transition">
+              Contact
+            </Link>
+            <Link href="/donate" className="hover:text-blue-400 transition">
+              Donate
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 import { getAirportName, getAirportCity, getAirportCoords } from "@/utils/airportLookup";
 import aircraftData from "@/data/aircraft.json";
 import FlightacDetails from "@/components/flight&acDetails";
-import FlightBookingLinks from "@/components/booking"; // 🔹 Added
+import FlightBookingLinks from "@/components/booking";
 
 const AirportMap = dynamic(() => import("../../components/FlightMap"), { ssr: false });
 
@@ -281,8 +281,8 @@ export default function FlightDetails() {
         </div>
 
         {/* RIGHT COLUMN: Map + Video + Booking Links */}
-        <div className="flex-1 flex flex-col gap-6 mt-10">
-          <div className="h-96">
+        <div className="flex-1 flex flex-col gap-6 mt-10 items-center">
+          <div className="h-96 w-full">
             <h1 className="font-semibold text-3xl mb-2">Route Map:</h1>
             <div className="mb-50 mt-3">
               <AirportMap airports={airports} routes={routes} />
@@ -292,7 +292,7 @@ export default function FlightDetails() {
          <div className="mt-40">
   <h2 className="text-2xl font-semibold mb-2">Flight Review Video</h2>
   <p className="text-xs text-gray-400 mb-2">
-    Disclaimer: Flight review videos are uploaded by third-party creators and reflect their personal experiences and opinions. The content may be subjective and does not necessarily represent the airline or service quality.
+    Flight review videos are uploaded by third-party creators and reflect their personal experiences and opinions. The content may be subjective and does not necessarily represent the airline or service quality.
   </p>
 
   <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg bg-[#0D0F2C] border border-white flex items-center justify-center">

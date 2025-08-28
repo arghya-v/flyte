@@ -55,6 +55,10 @@ export default function CurrencySelector({ children }: Props) {
           focus:ring-white/30
           shadow-lg shadow-black/20
           transition
+          fixed bottom-20
+          fixed right-10
+
+          z-60
         "
       >
         {currencies.map((c) => (
