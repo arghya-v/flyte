@@ -176,15 +176,13 @@ export default function Home() {
             <Link href="/about" className="hover:text-blue-400 transition">
               About
             </Link>
-            <Link href="/search" className="hover:text-blue-400 transition">
+            <Link href="/" className="hover:text-blue-400 transition">
               Search Flights
             </Link>
             <Link href="/contact" className="hover:text-blue-400 transition">
               Contact
             </Link>
-            <Link href="/donate" className="hover:text-blue-400 transition">
-              Donate
-            </Link>
+            <Link href="https://github.com/arghya-v/flyte" target="_blank" rel="noopener noreferrer" className="block hover:text-blue-400 transition">  GitHub </Link>
           </div>
         </div>
       </footer>

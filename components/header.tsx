@@ -21,7 +21,7 @@ export default function Header() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex gap-6 text-md font-light items-center [&_a]:focus:outline-none [&_a]:focus:ring-0">
           <Link href="/about" className="hover:text-blue-400 transition">About</Link>
-          <Link href="/search" className="hover:text-blue-400 transition">Search Flights</Link>
+          <Link href="/" className="hover:text-blue-400 transition">Search Flights</Link>
           <Link href="/contact" className="hover:text-blue-400 transition">Contact</Link>
           <Link href="https://github.com/arghya-v/flyte" target="_blank" rel="noopener noreferrer" className="block hover:text-blue-400 transition"> GitHub </Link>
         </nav>
@@ -39,7 +39,7 @@ export default function Header() {
       {open && (
         <div className="md:hidden border-t border-white/20 px-6 py-4 space-y-3 bg-white/5 backdrop-blur-md rounded-b-2xl [&_a]:focus:outline-none [&_a]:focus:ring-0">
           <Link href="/about" className="block hover:text-blue-400 transition">About</Link>
-          <Link href="/search" className="block hover:text-blue-400 transition">Search Flights</Link>
+          <Link href="/" className="block hover:text-blue-400 transition">Search Flights</Link>
           <Link href="/contact" className="block hover:text-blue-400 transition">Contact</Link>
           <Link href="https://github.com/arghya-v/flyte" target="_blank" rel="noopener noreferrer" className="block hover:text-blue-400 transition"> GitHub </Link>
         </div>

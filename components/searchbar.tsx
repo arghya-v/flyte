@@ -262,13 +262,15 @@ function DateField({
       <div className="relative">
         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 z-5" />
         <DatePicker
-          selected={date}
-          onChange={(d: Date | null) => setDate(d)}
-          placeholderText={`Select ${label.toLowerCase()} date`}
-          className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(13,17,47,1)] border border-[rgba(255,255,255,0.1)] text-gray-300"
-          calendarClassName="bg-[rgba(13,17,47,1)] text-white"
-          dayClassName={() => "text-white hover:bg-[#4202B4] rounded-full"}
-        />
+  selected={date}
+  onChange={(d: Date | null) => setDate(d)}
+  placeholderText={`Select ${label.toLowerCase()} date`}
+  className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(13,17,47,1)] border border-[rgba(255,255,255,0.1)] text-gray-300"
+  calendarClassName="bg-[rgba(13,17,47,1)] text-white"
+  dayClassName={() => "text-white hover:bg-[#4202B4] rounded-full"}
+  popperClassName="z-50"       // makes the popper itself high z-index
+  portalId="root-portal"       // forces rendering inside #root-portal
+/>
       </div>
     </div>
   );

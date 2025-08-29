@@ -197,7 +197,14 @@ export default function FlightCard({ flight, currency, rates }: Props) {
   const airlineCode = firstSegment?.carrier || "";
   const flightNumber = firstSegment?.flightNumber || "0000";
   const departureDate = firstSegment?.departure?.at || "unknown";
-
+  // Skip rendering flights with codes starting with 6x, 7x, 8x (fake codes)
+  if (
+    airlineCode.startsWith("6X") ||
+    airlineCode.startsWith("7X") ||
+    airlineCode.startsWith("8X")
+  ) {
+    return null;
+  }
   // ✅ Create unique flightId slug
   const flightId = `${airlineCode}-${flightNumber}-${departureDate}`;
 
