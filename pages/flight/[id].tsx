@@ -3,15 +3,43 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Wifi, Plug, Tv, Armchair } from "lucide-react";
+import { Wifi, Plug, Tv, Armchair, Share2 } from "lucide-react";
 import dynamic from "next/dynamic";
-
+import Footer from "@/components/footer";
 import { getAirportName, getAirportCity, getAirportCoords } from "@/utils/airportLookup";
 import aircraftData from "@/data/aircraft.json";
 import FlightacDetails from "@/components/flight&acDetails";
 import FlightBookingLinks from "@/components/booking";
-
+import Header from "@/components/header";
 const AirportMap = dynamic(() => import("../../components/FlightMap"), { ssr: false });
+
+function ShareFlightButton({ flightId }: { flightId: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/flight/${flightId}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Check out this flight", url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      console.error("Sharing failed:", err);
+    }
+  };
+  return (
+    <button
+      onClick={handleShare}
+      className="mt-6 bg-blue-950/10 hover:bg-blue-900 backdrop-blur-md border border-white/10 text-white font-medium py-3 px-6 rounded-xl shadow-lg flex items-center gap-2 transition"
+    >
+      <Share2 size={18} />
+      {copied ? "Link Copied!" : "Share Flight"}
+    </button>
+  );
+}
 
 const formatDateTime = (dateStr: string) => {
   if (!dateStr) return { time: "", date: "" };
@@ -44,7 +72,25 @@ const SegmentLogo = ({ carrier }: { carrier: string }) => {
 export default function FlightDetails() {
   const router = useRouter();
   const { id } = router.query;
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // hide header when scrolling down
+      } else {
+        setShowHeader(true); // show header when scrolling up
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
   const [flight, setFlight] = useState<any | null>(null);
   const [videoId, setVideoId] = useState<string | null>(null);
 
@@ -101,6 +147,8 @@ export default function FlightDetails() {
     fetchVideo();
   }, [id, flight]);
 
+  
+
   if (!flight) return <p className="p-6 text-white">Loading flight details...</p>;
 
   const firstItinerary = (flight.itineraries ?? [])[0];
@@ -134,12 +182,18 @@ export default function FlightDetails() {
   return (
     <div className="min-h-screen p-6 text-white" style={{ backgroundColor: "#0E0A27" }}>
       <h1 className="text-xs font-md mb-6 text-center text-right text-white/30">
-        Flight Details: {Array.isArray(id) ? id[0] : id}
+        Flight ID: {Array.isArray(id) ? id[0] : id}
+        <div className='flex justify-left fixed top-20 md:top-2 z-50'>
+        {id && (
+            <ShareFlightButton flightId={Array.isArray(id) ? id[0] : id} />
+          )}
+          </div>
       </h1>
-
-      <div className="flex flex-col lg:flex-row gap-8">
+      
+      <div className="flex flex-col lg:flex-row gap-8 mt-10">
+        
         {/* LEFT COLUMN: Original Flight Cards */}
-        <div className="flex-1">
+        <div className="flex-1 mb-18">
           {(flight.itineraries ?? []).map((itinerary: any, i: number) => {
             const segs = itinerary.segments ?? [];
             return (
@@ -147,7 +201,16 @@ export default function FlightDetails() {
                 <p className="font-semibold text-4xl text-white text-center mt-4 mb-4">
                   {i === 0 ? "⮦ Outbound Flight ⮧" : "⮦ Return Flight ⮧"}
                 </p>
-
+                <motion.div
+                initial={{ y: 0 }}
+                animate={{ y: showHeader ? 0 : -100 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="fixed top-0 left-0 w-full z-50 "
+              >
+                <div className="flex w-full max-w-6xl mx-auto justify-between items-center p-4">
+                  <Header />
+                </div>
+              </motion.div>
                 {segs.map((seg: any, j: number) => {
                   const dep = formatDateTime(seg.departure.at);
                   const arr = formatDateTime(seg.arrival.at);
@@ -161,7 +224,7 @@ export default function FlightDetails() {
                         className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-lg"
                         style={{ background: "rgba(12, 19, 46, 0.6)" }}
                       >
-                        <div className="absolute top-33.5 right-8">
+                        <div className="absolute md:top-33.5 right-8 top-38">
                           <SegmentLogo carrier={seg.carrier} />
                         </div>
 
@@ -281,7 +344,7 @@ export default function FlightDetails() {
         </div>
 
         {/* RIGHT COLUMN: Map + Video + Booking Links */}
-        <div className="flex-1 flex flex-col gap-6 mt-10 items-center">
+        <div className="flex-1 flex flex-col gap-6 mt-10 items-center z-10">
           <div className="h-96 w-full">
             <h1 className="font-semibold text-3xl mb-2">Route Map:</h1>
             <div className="mb-50 mt-3">
@@ -294,7 +357,7 @@ export default function FlightDetails() {
   <p className="text-xs text-gray-400 mb-2">
     Flight review videos are uploaded by third-party creators and reflect their personal experiences and opinions. The content may be subjective and does not necessarily represent the airline or service quality.
   </p>
-
+  
   <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg bg-[#0D0F2C] border border-white flex items-center justify-center">
     {videoId ? (
       <iframe
@@ -315,7 +378,7 @@ export default function FlightDetails() {
   </div>
 </div>
           {flight.itineraries?.length > 0 && (
-  <div className="mt-20">
+  <div className="mt-10 md:mt-40">
     <FlightBookingLinks
       origin={flight.itineraries[0].segments[0].departure.iataCode}
       destination={flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.iataCode}
@@ -331,7 +394,11 @@ export default function FlightDetails() {
   </div>
           )}
         </div>
+      </div >
+      <div className="mt-50 md:mt-5">
+      <Footer/>
       </div>
     </div>
   );
 }
+

@@ -7,25 +7,32 @@ type FooterProps = {
 export default function Footer({ className = "" }: FooterProps) {
   return (
     <footer
-      className={`backdrop-blur-md bg-blue-950/5 border-t border-white/10 w-full ${className} fixed bottom-0 left-0 w-full z-40`}
+      className={`backdrop-blur-md bg-blue-950/5 border-t border-white/10 w-full ${className} fixed bottom-0 left-0 w-full z-100`}
     >
       <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-sm text-gray-400">
-          © {new Date().getFullYear()} FlightFinder. All rights reserved.
+          © {new Date().getFullYear()} Flyte | Built by{" "}
+          <a
+            href="https://arghyav.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-400 transition font-semibold"
+          >
+            Arghya Vyas
+          </a>
+          . This project is under the MIT License.
         </p>
         <div className="flex gap-6 text-sm">
           <Link href="/about" className="hover:text-blue-400 transition">
             About
           </Link>
-          <Link href="/search" className="hover:text-blue-400 transition">
+          <Link href="/" className="hover:text-blue-400 transition">
             Search Flights
           </Link>
           <Link href="/contact" className="hover:text-blue-400 transition">
             Contact
           </Link>
-          <Link href="/donate" className="hover:text-blue-400 transition">
-            Donate
-          </Link>
+          <Link href="https://github.com/arghya-v/flyte" target="_blank" rel="noopener noreferrer" className="block hover:text-blue-400 transition">  GitHub </Link>
         </div>
       </div>
     </footer>

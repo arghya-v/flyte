@@ -1,5 +1,5 @@
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+
 type BookingProps = {
   origin: string;
   destination: string;
@@ -18,12 +18,10 @@ export default function FlightBookingLinks({
   cabin = "economy",
 }: BookingProps) {
   // Kayak URL
-const kayakUrl =
-  returnDate && returnDate.trim() !== ""
-    ? `https://www.kayak.com/flights/${origin}-${destination}/${departDate}/${returnDate}?sort=bestflight_a`
-    : `https://www.kayak.com/flights/${origin}-${destination}/${departDate}?fs=fdDir%3Dfalse&ucs=1k37tp8&sort=bestflight_a`;
-
-
+  const kayakUrl =
+    returnDate && returnDate.trim() !== ""
+      ? `https://www.kayak.com/flights/${origin}-${destination}/${departDate}/${returnDate}?sort=bestflight_a`
+      : `https://www.kayak.com/flights/${origin}-${destination}/${departDate}?fs=fdDir%3Dfalse&ucs=1k37tp8&sort=bestflight_a`;
 
   // Skyscanner URL
   const cabinMap: Record<string, string> = {
@@ -31,33 +29,51 @@ const kayakUrl =
     business: "business",
     first: "first",
   };
-  const skyscannerUrl = `https://www.skyscanner.com/transport/flights/${origin}/${destination}/${departDate}${
-    returnDate ? `/${returnDate}` : ""
-  }/?adults=${passengers}&cabinclass=${cabinMap[cabin.toLowerCase()] || "economy"}`;
 
- useEffect(() => {
+  function formatDateForSkyscanner(date: string) {
+    const [year, month, day] = date.split("-");
+    return year.slice(2) + month + day; // e.g., "2025-09-06" -> "250906"
+  }
+
+  const skyscannerUrl = `https://www.skyscanner.ca/transport/flights/${origin.toLowerCase()}/${destination.toLowerCase()}/${formatDateForSkyscanner(departDate)}${
+    returnDate ? `/${formatDateForSkyscanner(returnDate)}` : ""
+  }/?adultsv2=${passengers}&childrenv2=&cabinclass=${
+    cabinMap[cabin.toLowerCase()] || "economy"
+  }&ref=home&rtn=${returnDate ? 1 : 0}&outboundaltsenabled=false&inboundaltsenabled=false&preferdirects=false`;
+
+  useEffect(() => {
     console.log("Kayak URL:", kayakUrl);
     console.log("Skyscanner URL:", skyscannerUrl);
   }, [kayakUrl, skyscannerUrl]);
-  return (
-    <div className="mt-8 flex gap-4 justify-center">
-      <a
-        href={kayakUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-colors duration-300 flex items-center gap-2"
-      >
-        Book with Kayak
-      </a>
 
-      <a
-        href={skyscannerUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="bg-green-600 hover:bg-green-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-colors duration-300 flex items-center gap-2"
-      >
-        Book with Skyscanner
-      </a>
+  return (
+    <div className="mt-10 flex flex-col items-center">
+      {/* Buttons */}
+      <div className="flex gap-6 flex-wrap justify-center">
+        <a
+          href={kayakUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-4 px-8 text-lg rounded-xl shadow-lg transition-colors duration-300"
+        >
+          Book with Kayak
+        </a>
+
+        <a
+          href={skyscannerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 text-lg rounded-xl shadow-lg transition-colors duration-300"
+        >
+          Book with Skyscanner
+        </a>
+      </div>
+
+      {/* Disclaimer */}
+      <p className="mt-6 text-sm text-gray-500 text-center max-w-md">
+        Disclaimer: Flyte is not affiliated with Kayak or Skyscanner. These links are provided
+        for convenience only.
+      </p>
     </div>
   );
 }
