@@ -153,7 +153,7 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
               <div
                 key={i}
                 className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 
-                           h-3 w-3 rounded-full bg-pink-500 shadow-lg shadow-pink-500/50"
+                           h-3 w-3 rounded-full bg-pink-500 shadow-lg shadow-pink-500/50 sm:block hidden"
                 style={{ left: `${positionPercent}%` }}
               />
             );
@@ -161,7 +161,7 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
 
         <FaPlane
           className="absolute left-full -translate-x-1/2 top-1/2 -translate-y-1/2 
-                     w-4 h-4 text-white z-10"
+                     w-4 h-4 text-white z-10 sm:block hidden"
         />
 
         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-xs text-gray-300 flex items-center gap-1">
@@ -169,9 +169,9 @@ function ItineraryPreview({ itin }: ItineraryPreviewProps) {
           {totalDur}
         </div>
 
-        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-sm text-gray-400">
-          <StopsLabel itin={itin} />
-        </div>
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-sm text-gray-400 sm:block hidden">
+  <StopsLabel itin={itin} />
+</div>
       </div>
 
       {/* Arrival */}
@@ -265,7 +265,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
         </div>
 
         <div className="flex flex-col items-end justify-center gap-2 w-44">
-          <div className="text-xl font-semibold text-white drop-shadow">
+          <div className="text-md sm:text-xl font-semibold text-white drop-shadow">
             {convertedPrice} {currency || flight.price.currency}
           </div>
           {flight.co2Emissions && (
@@ -278,17 +278,18 @@ export default function FlightCard({ flight, currency, rates }: Props) {
           <button
   onClick={(e) => {
     e.stopPropagation();
-    // Save flight data to localStorage
     localStorage.setItem("selectedFlight", JSON.stringify(flight));
-
-    // Navigate to dynamic page
     window.location.href = `/flight/${encodeURIComponent(flightId)}`;
   }}
-  className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 
-             rounded-lg font-semibold hover:bg-white/30 transition"
+  className="bg-white/20 backdrop-blur-sm text-white 
+             px-3 py-1.5 sm:px-4 sm:py-2
+             rounded-lg font-semibold 
+             text-sm sm:text-base
+             hover:bg-white/30 transition"
 >
   Learn More →
 </button>
+
         </div>
       </div>
 
@@ -324,7 +325,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
                           style={{ background: "rgba(12, 19, 46, 0.6)" }}
                         >
                           {/* Airline Logo on top right */}
-                          <div className="absolute top-33.5 right-8">
+                          <div className="absolute top-50 sm:top-33.5 right-8">
                             <SegmentLogo carrier={seg.carrier} />
                           </div>
 

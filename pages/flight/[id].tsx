@@ -355,8 +355,16 @@ export default function FlightDetails() {
          <div className="mt-40">
   <h2 className="text-2xl font-semibold mb-2">Flight Review Video</h2>
   <p className="text-xs text-gray-400 mb-2">
-    Flight review videos are uploaded by third-party creators and reflect their personal experiences and opinions. The content may be subjective and does not necessarily represent the airline or service quality.
-  </p>
+  Flight review videos are uploaded by third-party creators and reflect their personal experiences and opinions. The content may be subjective and does not necessarily represent the airline or service quality.{" "}
+  <a
+    href="https://tally.so/r/npQPyy"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-400 hover:underline transition"
+  >
+    Report incorrect video
+  </a>
+</p>
   
   <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg bg-[#0D0F2C] border border-white flex items-center justify-center">
     {videoId ? (

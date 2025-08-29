@@ -1,17 +1,21 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const flightCode = req.query.flightCode as string;
-  let airline = req.query.airline as string | null;
-  const serviceClass = (req.query.serviceClass as string) || null;
+  const flightCode = (req.query.flightCode as string)?.trim();
+  let airline = (req.query.airline as string)?.trim() || "";
+  const serviceClass = (req.query.serviceClass as string)?.trim() || null;
 
-  if (!flightCode) return res.status(400).json({ error: "Missing flight code" });
+  if (!flightCode) {
+    return res.status(400).json({ error: "Missing flight code" });
+  }
 
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: "YouTube API key not set" });
+  if (!apiKey) {
+    return res.status(500).json({ error: "YouTube API key not set" });
+  }
 
   try {
-    // 🔹 Step 1: Fetch airline if not provided
+    // 🔹 Step 1: Fetch airline if not provided or empty
     if (!airline) {
       try {
         const routeRes = await fetch(
@@ -19,56 +23,57 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         );
         if (routeRes.ok) {
           const routeData = await routeRes.json();
-          airline = routeData.response?.flightroute?.airline?.name || null;
+          const name = routeData.response?.flightroute?.airline?.name?.trim();
+          airline = name && name.length > 0 ? name : flightCode.slice(0, 2);
+        } else {
+          airline = flightCode.slice(0, 2);
         }
       } catch (err) {
         console.warn("⚠️ Airline lookup failed:", err);
+        airline = flightCode.slice(0, 2);
       }
     }
-    if (airline === "SATA International") {
-  airline = "Azores";
-}
+
+    // 🔹 Optional special case
+    if (airline === "SATA International") airline = "Azores";
+    if (airline === "VS") airline = "Virgin Atlantic";
+
+    airline = airline.trim(); // ensure no extra whitespace
 
     // 🔹 Step 2: Build YouTube query
-    const queryParts = [];
-    if (airline) queryParts.push(airline);
+    const queryParts = [airline];
     if (serviceClass) queryParts.push(serviceClass);
     queryParts.push("trip report review simply aviation economy");
-
     const query = queryParts.join(" ");
 
+    // 🔹 Step 3: Call YouTube
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
       query
     )}&type=video&maxResults=1&key=${apiKey}`;
 
-    // 🔹 Step 3: Call YouTube
     const response = await fetch(url);
     const data = await response.json();
+
+    const videoId =
+      data.items && data.items.length > 0 ? data.items[0].id.videoId : null;
+
     const payload = {
-      videoId: data.items && data.items.length > 0 ? data.items[0].id.videoId : null,
+      videoId,
       airline,
       serviceClass,
       query,
     };
-    console.log("YouTube search payload:", payload);
-    if (data.items && data.items.length > 0) {
-      return res.status(200).json({
-        videoId: data.items[0].id.videoId,
-        airline: airline,
-        serviceClass: serviceClass,
-        query: query, // useful for debugging
-      });
-    }
 
-    return res.status(200).json({
-      videoId: null,
-      airline: airline,
-      serviceClass: serviceClass,
-      query: query,
-    });
-    
+    console.log("YouTube search payload:", payload);
+
+    return res.status(200).json(payload);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ videoId: null, airline, serviceClass });
+    console.error("⚠️ Handler error:", err);
+    return res.status(500).json({
+      videoId: null,
+      airline,
+      serviceClass,
+      query: "trip report review simply aviation economy",
+    });
   }
 }
