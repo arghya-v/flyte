@@ -13,33 +13,7 @@ import FlightBookingLinks from "@/components/booking";
 import Header from "@/components/header";
 const AirportMap = dynamic(() => import("../../components/FlightMap"), { ssr: false });
 
-function ShareFlightButton({ flightId }: { flightId: string }) {
-  const [copied, setCopied] = useState(false);
 
-  const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/flight/${flightId}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "Check out this flight", url: shareUrl });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch (err) {
-      console.error("Sharing failed:", err);
-    }
-  };
-  return (
-    <button
-      onClick={handleShare}
-      className="mt-6 bg-blue-950/10 hover:bg-blue-900 backdrop-blur-md border border-white/10 text-white font-medium py-3 px-6 rounded-xl shadow-lg flex items-center gap-2 transition"
-    >
-      <Share2 size={18} />
-      {copied ? "Link Copied!" : "Share Flight"}
-    </button>
-  );
-}
 
 const formatDateTime = (dateStr: string) => {
   if (!dateStr) return { time: "", date: "" };
@@ -183,11 +157,6 @@ export default function FlightDetails() {
     <div className="min-h-screen p-6 text-white" style={{ backgroundColor: "#0E0A27" }}>
       <h1 className="text-xs font-md mb-6 text-center text-right text-white/30">
         Flight ID: {Array.isArray(id) ? id[0] : id}
-        <div className='flex justify-left fixed top-20 md:top-2 z-50'>
-        {id && (
-            <ShareFlightButton flightId={Array.isArray(id) ? id[0] : id} />
-          )}
-          </div>
       </h1>
       
       <div className="flex flex-col lg:flex-row gap-8 mt-10">
