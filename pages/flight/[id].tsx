@@ -167,7 +167,7 @@ export default function FlightDetails() {
             const segs = itinerary.segments ?? [];
             return (
               <div key={i} className="mt-8 space-y-6">
-                <p className="font-semibold text-4xl text-white text-center mt-4 mb-4">
+                <p className="font-semibold text-3xl text-white text-center mt-4 mb-4">
                   {i === 0 ? "⮦ Outbound Flight ⮧" : "⮦ Return Flight ⮧"}
                 </p>
                 <motion.div
@@ -272,11 +272,11 @@ export default function FlightDetails() {
                           </div>
 
                           {/* RIGHT: Times / Extras */}
-                          <div className="flex flex-col text-right flex-1">
+                          <div className="flex flex-col text-right flex-1 mr-3 sm:mr-0 sm:ml-1">
                             <div className="mb-8">
                               <div className="text-gray-300 text-sm">{dep.date}</div>
                               <div className="text-2xl font-medium text-green-400">{dep.time}</div>
-                              <div className="text-sm text-gray-400 mt-1">
+                              <div className="text-gray-400 mt-1">
                                 {seg.carrier} {seg.flightNumber}
                               </div>
                               <div className="text-xs text-gray-400 font-semibold mb-1 z-10">{getAircraftName(seg.aircraft)}</div>

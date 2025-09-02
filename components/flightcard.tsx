@@ -266,7 +266,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
 
         <div className="flex flex-col items-end justify-center gap-2 w-44">
           <div className="text-md sm:text-xl font-semibold text-white drop-shadow">
-            {convertedPrice} {currency || flight.price.currency}
+            {convertedPrice}
           </div>
           {flight.co2Emissions && (
             <p className={`text-xs ${emissionColor}`}>
