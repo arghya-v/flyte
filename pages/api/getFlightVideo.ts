@@ -34,9 +34,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    // 🔹 Optional special case
+    // 🔹 Optional special case(s)
     if (airline === "SATA International") airline = "Azores";
+    if (airline === "AI") airline = "Air India";
+    if (airline === "BA") airline = "British Airways";
+    if (airline === "AF") airline = "Air France";
+    if (airline === "KL") airline = "KLM Royal Dutch Airlines";
+    if (airline === "LH") airline = "Lufthansa";
+    if (airline === "SQ") airline = "Singapore Airlines";
+    if (airline === "CX") airline = "Cathay Pacific";
+    if (airline === "EK") airline = "Emirates";
+    if (airline === "QR") airline = "Qatar Airways";
     if (airline === "VS") airline = "Virgin Atlantic";
+    if (airline === "DL") airline = "Delta Air Lines";
+    if (airline === "AA") airline = "American Airlines";
+    if (airline === "UA") airline = "United Airlines";
+    if (airline === "QF") airline = "Qantas";
+    if (airline === "AC") airline = "Air Canada";
 
     airline = airline.trim(); // ensure no extra whitespace
 

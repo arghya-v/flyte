@@ -193,7 +193,7 @@ export default function FlightDetails() {
                         className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-lg"
                         style={{ background: "rgba(12, 19, 46, 0.6)" }}
                       >
-                        <div className="absolute md:top-33.5 right-8 top-38">
+                        <div className="absolute md:top-33.5 right-8 top-38 mt-1">
                           <SegmentLogo carrier={seg.carrier} />
                         </div>
 
@@ -279,7 +279,7 @@ export default function FlightDetails() {
                               <div className="text-sm text-gray-400 mt-1">
                                 {seg.carrier} {seg.flightNumber}
                               </div>
-                              <div className="text-sm text-gray-400 font-semibold">{getAircraftName(seg.aircraft)}</div>
+                              <div className="text-xs text-gray-400 font-semibold mb-1 z-10">{getAircraftName(seg.aircraft)}</div>
                             </div>
 
                             <div className="mt-auto">
@@ -355,7 +355,7 @@ export default function FlightDetails() {
   </div>
 </div>
           {flight.itineraries?.length > 0 && (
-  <div className="mt-10 md:mt-40">
+  <div className="mt-10 md:mt-10 mb-20">
     <FlightBookingLinks
       origin={flight.itineraries[0].segments[0].departure.iataCode}
       destination={flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.iataCode}
