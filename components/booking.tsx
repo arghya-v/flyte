@@ -47,8 +47,8 @@ export default function FlightBookingLinks({
   }, [kayakUrl, skyscannerUrl]);
 
   return (
-    <div className="mt-10 flex flex-col items-center">
-      <p className="mt-6 text-sm text-gray-500 text-center max-w-md">
+    <div className="mt-2 flex flex-col items-center">
+      <p className="text-sm text-gray-500 text-center max-w-md mb-4">
         Disclaimer: Flyte is not affiliated with Kayak or Skyscanner. These links are provided
         for convenience only.
       </p>
@@ -72,9 +72,6 @@ export default function FlightBookingLinks({
           Book with Skyscanner
         </a>
       </div>
-
-      {/* Disclaimer */}
-      
     </div>
   );
 }

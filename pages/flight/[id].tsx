@@ -6,14 +6,19 @@ import { motion } from "framer-motion";
 import { Wifi, Plug, Tv, Armchair, Share2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Footer from "@/components/footer";
-import { getAirportName, getAirportCity, getAirportCoords } from "@/utils/airportLookup";
+import {
+  getAirportName,
+  getAirportCity,
+  getAirportCoords,
+} from "@/utils/airportLookup";
 import aircraftData from "@/data/aircraft.json";
 import FlightacDetails from "@/components/flight&acDetails";
 import FlightBookingLinks from "@/components/booking";
 import Header from "@/components/header";
-const AirportMap = dynamic(() => import("../../components/FlightMap"), { ssr: false });
-
-
+import TotalDistance from "@/components/totaldistance";
+const AirportMap = dynamic(() => import("../../components/FlightMap"), {
+  ssr: false,
+});
 
 const formatDateTime = (dateStr: string) => {
   if (!dateStr) return { time: "", date: "" };
@@ -35,12 +40,22 @@ const calcLayover = (arrive: string, depart: string) => {
   return `${hrs > 0 ? hrs + "h " : ""}${mins}m layover`;
 };
 
-const aircraftMap: Record<string, string> = aircraftData as Record<string, string>;
-const getAircraftName = (code?: string) => (code ? aircraftMap[code] || code : "Aircraft TBA");
+const aircraftMap: Record<string, string> = aircraftData as Record<
+  string,
+  string
+>;
+const getAircraftName = (code?: string) =>
+  code ? aircraftMap[code] || code : "Aircraft TBA";
 
 const SegmentLogo = ({ carrier }: { carrier: string }) => {
   const url = `http://img.wway.io/pics/root/${carrier}@png?exar=1&rs=fit:256:256`;
-  return <img src={url} alt={carrier} className="h-15 w-24 object-cover z-10 bg-white rounded-md p-2" />;
+  return (
+    <img
+      src={url}
+      alt={carrier}
+      className="h-15 w-24 object-cover z-10 bg-white rounded-md p-2"
+    />
+  );
 };
 
 export default function FlightDetails() {
@@ -87,7 +102,8 @@ export default function FlightDetails() {
     if (parts.length >= 2) flightCode = parts[0] + parts[1];
 
     const airline = flight.validatingAirlineCodes?.[0] || "";
-    const serviceClass = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin || "";
+    const serviceClass =
+      flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin || "";
     const prettyClass =
       serviceClass.toLowerCase() === "economy"
         ? "economy"
@@ -98,7 +114,9 @@ export default function FlightDetails() {
     async function fetchVideo() {
       try {
         const res = await fetch(
-          `/api/getFlightVideo?flightCode=${encodeURIComponent(flightCode)}&airline=${encodeURIComponent(
+          `/api/getFlightVideo?flightCode=${encodeURIComponent(
+            flightCode
+          )}&airline=${encodeURIComponent(
             airline
           )}&serviceClass=${encodeURIComponent(prettyClass || "")}`
         );
@@ -121,9 +139,8 @@ export default function FlightDetails() {
     fetchVideo();
   }, [id, flight]);
 
-  
-
-  if (!flight) return <p className="p-6 text-white">Loading flight details...</p>;
+  if (!flight)
+    return <p className="p-6 text-white">Loading flight details...</p>;
 
   const firstItinerary = (flight.itineraries ?? [])[0];
   const firstSegs = firstItinerary?.segments ?? [];
@@ -145,41 +162,50 @@ export default function FlightDetails() {
       },
     ]);
 
-  const routes = (flight.itineraries ?? []).flatMap((itinerary: any, idx: number) =>
-    (itinerary.segments ?? []).map((seg: any) => ({
-      from: seg.departure.iataCode,
-      to: seg.arrival.iataCode,
-      itineraryIndex: idx,
-    }))
+  const routes = (flight.itineraries ?? []).flatMap(
+    (itinerary: any, idx: number) =>
+      (itinerary.segments ?? []).map((seg: any) => ({
+        from: seg.departure.iataCode,
+        to: seg.arrival.iataCode,
+        itineraryIndex: idx,
+      }))
   );
 
   return (
-    <div className="min-h-screen p-6 text-white" style={{ backgroundColor: "#0E0A27" }}>
+    <div
+      className="min-h-screen p-6 text-white"
+      style={{ backgroundColor: "#0E0A27" }}
+    >
       <h1 className="text-xs font-md mb-6 text-center text-right text-white/30">
         Flight ID: {Array.isArray(id) ? id[0] : id}
       </h1>
-      
+
       <div className="flex flex-col lg:flex-row gap-8 mt-10">
-        
         {/* LEFT COLUMN: Original Flight Cards */}
         <div className="flex-1 mb-18">
+          <div className="flex-1 flex flex-col gap-6 mt-10 items-center z-10">
+                  <TotalDistance flight={flight} />
+                </div>
           {(flight.itineraries ?? []).map((itinerary: any, i: number) => {
             const segs = itinerary.segments ?? [];
             return (
+              
               <div key={i} className="mt-8 space-y-6">
+                
                 <p className="font-semibold text-3xl text-white text-center mt-4 mb-4">
                   {i === 0 ? "⮦ Outbound Flight ⮧" : "⮦ Return Flight ⮧"}
                 </p>
                 <motion.div
-                initial={{ y: 0 }}
-                animate={{ y: showHeader ? 0 : -100 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="fixed top-0 left-0 w-full z-50 "
-              >
-                <div className="flex w-full max-w-6xl mx-auto justify-between items-center p-4">
-                  <Header />
-                </div>
-              </motion.div>
+                  initial={{ y: 0 }}
+                  animate={{ y: showHeader ? 0 : -100 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="fixed top-0 left-0 w-full z-50 "
+                >
+                  <div className="flex w-full max-w-6xl mx-auto justify-between items-center p-4">
+                    <Header />
+                  </div>
+                </motion.div>
+
                 {segs.map((seg: any, j: number) => {
                   const dep = formatDateTime(seg.departure.at);
                   const arr = formatDateTime(seg.arrival.at);
@@ -197,7 +223,9 @@ export default function FlightDetails() {
                           <SegmentLogo carrier={seg.carrier} />
                         </div>
 
-                        <FlightacDetails callsign={seg.carrier + seg.flightNumber} />
+                        <FlightacDetails
+                          callsign={seg.carrier + seg.flightNumber}
+                        />
 
                         <div className="flex justify-between gap-8">
                           {/* LEFT: Departure / Arrival */}
@@ -223,7 +251,8 @@ export default function FlightDetails() {
                                   {seg.departure.iataCode}
                                 </div>
                                 <div className="text-md text-gray-300 ml-1">
-                                  {getAirportName(seg.departure.iataCode)} ({getAirportCity(seg.departure.iataCode)})
+                                  {getAirportName(seg.departure.iataCode)} (
+                                  {getAirportCity(seg.departure.iataCode)})
                                 </div>
                               </div>
                             </div>
@@ -263,9 +292,12 @@ export default function FlightDetails() {
                                 />
                               </svg>
                               <div>
-                                <div className="text-5xl font-bold text-white mt-5 mr-5">{seg.arrival.iataCode}</div>
+                                <div className="text-5xl font-bold text-white mt-5 mr-5">
+                                  {seg.arrival.iataCode}
+                                </div>
                                 <div className="text-md text-gray-300 ml-1">
-                                  {getAirportName(seg.arrival.iataCode)} ({getAirportCity(seg.arrival.iataCode)})
+                                  {getAirportName(seg.arrival.iataCode)} (
+                                  {getAirportCity(seg.arrival.iataCode)})
                                 </div>
                               </div>
                             </div>
@@ -274,12 +306,18 @@ export default function FlightDetails() {
                           {/* RIGHT: Times / Extras */}
                           <div className="flex flex-col text-right flex-1 mr-3 sm:mr-0 sm:ml-1">
                             <div className="mb-8">
-                              <div className="text-gray-300 text-sm">{dep.date}</div>
-                              <div className="text-2xl font-medium text-green-400">{dep.time}</div>
+                              <div className="text-gray-300 text-sm">
+                                {dep.date}
+                              </div>
+                              <div className="text-2xl font-medium text-green-400">
+                                {dep.time}
+                              </div>
                               <div className="text-gray-400 mt-1">
                                 {seg.carrier} {seg.flightNumber}
                               </div>
-                              <div className="text-xs text-gray-400 font-semibold mb-1 z-10">{getAircraftName(seg.aircraft)}</div>
+                              <div className="text-xs text-gray-400 font-semibold mb-1 z-10">
+                                {getAircraftName(seg.aircraft)}
+                              </div>
                             </div>
 
                             <div className="mt-auto">
@@ -289,9 +327,15 @@ export default function FlightDetails() {
                                 <Tv size={18} />
                                 <Armchair size={18} />
                               </div>
-                              <div className="text-sm text-gray-400 mb-1">{formatDuration(seg.duration)}</div>
-                              <div className="text-2xl font-medium text-green-400">{arr.time}</div>
-                              <div className="text-gray-400 text-sm">{arr.date}</div>
+                              <div className="text-sm text-gray-400 mb-1">
+                                {formatDuration(seg.duration)}
+                              </div>
+                              <div className="text-2xl font-medium text-green-400">
+                                {arr.time}
+                              </div>
+                              <div className="text-gray-400 text-sm">
+                                {arr.date}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -300,8 +344,12 @@ export default function FlightDetails() {
                       {/* Layover Info */}
                       {hasNext && (
                         <div className="text-center text-sm text-gray-400 my-4">
-                          {calcLayover(seg.arrival.at, segs[j + 1].departure.at)} –{" "}
-                          {getAirportCity(segs[j + 1].departure.iataCode)} ({segs[j + 1].departure.iataCode})
+                          {calcLayover(
+                            seg.arrival.at,
+                            segs[j + 1].departure.at
+                          )}{" "}
+                          – {getAirportCity(segs[j + 1].departure.iataCode)} (
+                          {segs[j + 1].departure.iataCode})
                         </div>
                       )}
                     </div>
@@ -313,69 +361,85 @@ export default function FlightDetails() {
         </div>
 
         {/* RIGHT COLUMN: Map + Video + Booking Links */}
+
         <div className="flex-1 flex flex-col gap-6 mt-10 items-center z-10">
-          <div className="h-96 w-full">
+          {flight.itineraries?.length > 0 && (
+            <div className="mt-10 md:mt-10 mb-20">
+              <FlightBookingLinks
+                origin={flight.itineraries[0].segments[0].departure.iataCode}
+                destination={
+                  flight.itineraries[0].segments[
+                    flight.itineraries[0].segments.length - 1
+                  ].arrival.iataCode
+                }
+                departDate={
+                  flight.itineraries[0].segments[0].departure.at.split("T")[0]
+                }
+                returnDate={
+                  flight.itineraries.length > 1
+                    ? flight.itineraries[1].segments[0].departure.at.split(
+                        "T"
+                      )[0]
+                    : undefined
+                }
+                passengers={flight.travelerPricings?.length || 1}
+                cabin={
+                  flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0]
+                    ?.cabin || "economy"
+                }
+              />
+            </div>
+          )}
+          <div className="h-84 w-full">
             <h1 className="font-semibold text-3xl mb-2">Route Map:</h1>
             <div className="mb-50 mt-3">
               <AirportMap airports={airports} routes={routes} />
             </div>
           </div>
 
-         <div className="mt-40">
-  <h2 className="text-2xl font-semibold mb-2">Flight Review Video</h2>
-  <p className="text-xs text-gray-400 mb-2">
-  Flight review videos are uploaded by third-party creators and reflect their personal experiences and opinions. The content may be subjective and does not necessarily represent the airline or service quality.{" "}
-  <a
-    href="https://tally.so/r/npQPyy"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-400 hover:underline transition"
-  >
-    Report incorrect video
-  </a>
-</p>
-  
-  <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg bg-[#0D0F2C] border border-white flex items-center justify-center">
-    {videoId ? (
-      <iframe
-        width="100%"
-        height="100%"
-        src={`https://www.youtube.com/embed/${videoId}`}
-        title="Flight Review Video"
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
-    ) : (
-      <span className="text-gray-400 text-lg font-medium">
-        Video access temporarily unavailable
-        <p className="text-xs text-gray-400 text-center">(likely due to daily rate limits lol)</p>
-      </span>
-    )}
-  </div>
-</div>
-          {flight.itineraries?.length > 0 && (
-  <div className="mt-10 md:mt-10 mb-20">
-    <FlightBookingLinks
-      origin={flight.itineraries[0].segments[0].departure.iataCode}
-      destination={flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.iataCode}
-      departDate={flight.itineraries[0].segments[0].departure.at.split("T")[0]}
-      returnDate={
-        flight.itineraries.length > 1
-          ? flight.itineraries[1].segments[0].departure.at.split("T")[0]
-          : undefined
-      }
-      passengers={flight.travelerPricings?.length || 1}
-      cabin={flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin || "economy"}
-    />
-  </div>
-          )}
+          <div className="mt-40">
+            <h2 className="text-2xl font-semibold mb-2">Flight Review Video</h2>
+            <p className="text-xs text-gray-400 mb-2">
+              Flight review videos are uploaded by third-party creators and
+              reflect their personal experiences and opinions. The content may
+              be subjective and does not necessarily represent the airline or
+              service quality.{" "}
+              <a
+                href="https://tally.so/r/npQPyy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline transition"
+              >
+                Report incorrect video
+              </a>
+            </p>
+
+            <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg bg-[#0D0F2C] border border-white flex items-center justify-center mb-10">
+              {videoId ? (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="Flight Review Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <span className="text-gray-400 text-lg font-medium">
+                  Video access temporarily unavailable
+                  <p className="text-xs text-gray-400 text-center">
+                    (likely due to daily rate limits lol)
+                  </p>
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-      </div >
+      </div>
       <div className="mt-50 md:mt-5">
-      <Footer/>
+        <Footer />
       </div>
     </div>
   );
 }
-

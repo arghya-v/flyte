@@ -15,6 +15,7 @@ type Segment = {
   flightNumber: string;
   duration: string;
   aircraft?: string;
+  serviceClass: string;
 };
 
 type Itinerary = {
@@ -26,6 +27,7 @@ type Flight = {
   itineraries: Itinerary[];
   co2Emissions?: number;
   averageEmissions?: number;
+  serviceClass?: string;
 };
 
 type Props = {
@@ -197,6 +199,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
   const airlineCode = firstSegment?.carrier || "";
   const flightNumber = firstSegment?.flightNumber || "0000";
   const departureDate = firstSegment?.departure?.at || "unknown";
+  const serviceClass = firstSegment?.serviceClass || flight.serviceClass; // 👈 fallback
   // Skip rendering flights with codes starting with 6x, 7x, 8x (fake codes)
   if (
     airlineCode.startsWith("6X") ||
@@ -206,7 +209,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
     return null;
   }
   // ✅ Create unique flightId slug
-  const flightId = `${airlineCode}-${flightNumber}-${departureDate}`;
+  const flightId = `${airlineCode}-${flightNumber}-${departureDate}-${serviceClass}`;
 
   const logoUrl = `http://img.wway.io/pics/root/${airlineCode}@png?exar=1&rs=fit:200:100`;
 
@@ -278,6 +281,7 @@ export default function FlightCard({ flight, currency, rates }: Props) {
           <button
   onClick={(e) => {
     e.stopPropagation();
+    
     localStorage.setItem("selectedFlight", JSON.stringify(flight));
     window.location.href = `/flight/${encodeURIComponent(flightId)}`;
   }}

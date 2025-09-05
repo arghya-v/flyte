@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import SearchBar from "@/components/searchbar";
 import FlightCard from "@/components/flightcard";
 import CurrencySelector from "@/components/currency";
-import LoadingSpinner from "@/components/loading"; 
+import LoadingSpinner from "@/components/loading";
 import Header from "@/components/header";
 import Link from "next/link";
 
@@ -78,9 +78,19 @@ export default function Home() {
 
       const res = await fetch(`/api/searchFlights?${query.toString()}`);
       const data = await res.json();
-
       if (Array.isArray(data)) {
-        setFlights(data);
+        const flightsWithClass = data.map((f: any) => {
+          const cabin =
+            f.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin ||
+            serviceClass ||
+            "Unknown";
+          return {
+            ...f,
+            serviceClass: cabin,
+          };
+        });
+
+        setFlights(flightsWithClass);
       } else {
         setError(data.error || "Unexpected response from server.");
         setFlights([]);
@@ -170,7 +180,8 @@ export default function Home() {
       <footer className="backdrop-blur-md bg-blue-950/5 border-t border-white/10 w-full mt-auto z-40">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} Flyte. This project is under the MIT License.
+            © {new Date().getFullYear()} Flyte. This project is under the MIT
+            License.
           </p>
           <div className="flex gap-6 text-sm">
             <Link href="/about" className="hover:text-blue-400 transition">
@@ -182,7 +193,15 @@ export default function Home() {
             <Link href="/contact" className="hover:text-blue-400 transition">
               Contact
             </Link>
-            <Link href="https://github.com/arghya-v/flyte" target="_blank" rel="noopener noreferrer" className="block hover:text-blue-400 transition">  GitHub </Link>
+            <Link
+              href="https://github.com/arghya-v/flyte"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block hover:text-blue-400 transition"
+            >
+              {" "}
+              GitHub{" "}
+            </Link>
           </div>
         </div>
       </footer>
