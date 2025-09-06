@@ -47,7 +47,7 @@
   </li>
   <li>
     API: 
-    Amadeus Flight APIs, YouTube APIs, ExchangeRate APIs, etc.
+    Amadeus Flight APIs, Amadeus Airport Lookup API, YouTube APIs, ExchangeRate APIs, etc.
     <br></br>
     <img src="https://skillicons.dev/icons?i=nodejs" width="60" alt="Node.js (API Layer)" />
     <img src="https://skillicons.dev/icons?i=ts" width="60" alt="TypeScript" />
