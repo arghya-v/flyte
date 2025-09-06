@@ -219,7 +219,7 @@ export default function FlightDetails() {
                         className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-lg"
                         style={{ background: "rgba(12, 19, 46, 0.6)" }}
                       >
-                        <div className="absolute md:top-33.5 right-8 top-38 mt-1">
+                        <div className="absolute md:top-38.5 right-8 top-38 mt-5">
                           <SegmentLogo carrier={seg.carrier} />
                         </div>
 

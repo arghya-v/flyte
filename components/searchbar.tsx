@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, Fragment, useMemo } from "react";
 import { Search, MapPin, Calendar, ChevronDown } from "lucide-react";
 import PassengersDropdown from "@/components/PassengersDropdown";
 import DatePicker from "react-datepicker";
 import { Listbox, Transition } from "@headlessui/react";
+import debounce from "lodash.debounce";
+import { createPortal } from "react-dom";
 import "react-datepicker/dist/react-datepicker.css";
 
 type Airport = {
@@ -36,7 +38,7 @@ type Props = {
   onSearch: (params: any) => Promise<void>;
 };
 
-const flightTypes = ["Round-trip", "One-way",];
+const flightTypes = ["Round-trip", "One-way"];
 const serviceClasses = ["Economy", "Premium Economy", "Business", "First"];
 
 export default function SearchBar({
@@ -60,28 +62,6 @@ export default function SearchBar({
   setServiceClass,
   onSearch,
 }: Props) {
-  const [originSuggestions, setOriginSuggestions] = useState<Airport[]>([]);
-  const [destinationSuggestions, setDestinationSuggestions] = useState<Airport[]>([]);
-
-  const fetchAirports = async (query: string, setter: (data: Airport[]) => void) => {
-    if (!query) return setter([]);
-    try {
-      const res = await fetch(`/api/airports?query=${query}`);
-      const data = await res.json();
-      setter(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchAirports(origin, setOriginSuggestions);
-  }, [origin]);
-
-  useEffect(() => {
-    fetchAirports(destination, setDestinationSuggestions);
-  }, [destination]);
-
   const handleSearch = () => {
     onSearch({
       origin,
@@ -108,13 +88,25 @@ export default function SearchBar({
                 {flightType}
                 <ChevronDown className="w-4 h-4" />
               </Listbox.Button>
-              <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 translate-y-1 scale-95"
+                enterTo="opacity-100 translate-y-0 scale-100"
+                leave="transition ease-in duration-150"
+                leaveFrom="opacity-100 translate-y-0 scale-100"
+                leaveTo="opacity-0 translate-y-1 scale-95"
+              >
                 <Listbox.Options className="absolute mt-1 w-full bg-[#0D112F] rounded-lg shadow-lg text-white z-50">
                   {flightTypes.map((type) => (
                     <Listbox.Option
                       key={type}
                       value={type}
-                      className={({ active }) => `cursor-pointer px-4 py-2 ${active ? "bg-[#4202B4]" : ""}`}
+                      className={({ active }) =>
+                        `cursor-pointer px-4 py-2 ${
+                          active ? "bg-[#4202B4]" : ""
+                        }`
+                      }
                     >
                       {type}
                     </Listbox.Option>
@@ -131,13 +123,25 @@ export default function SearchBar({
                 {serviceClass}
                 <ChevronDown className="w-4 h-4" />
               </Listbox.Button>
-              <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 translate-y-1 scale-95"
+                enterTo="opacity-100 translate-y-0 scale-100"
+                leave="transition ease-in duration-150"
+                leaveFrom="opacity-100 translate-y-0 scale-100"
+                leaveTo="opacity-0 translate-y-1 scale-95"
+              >
                 <Listbox.Options className="absolute mt-1 w-full bg-[#0D112F] rounded-lg shadow-lg text-white z-50">
                   {serviceClasses.map((cls) => (
                     <Listbox.Option
                       key={cls}
                       value={cls}
-                      className={({ active }) => `cursor-pointer px-4 py-2 ${active ? "bg-[#4202B4]" : ""}`}
+                      className={({ active }) =>
+                        `cursor-pointer px-4 py-2 ${
+                          active ? "bg-[#4202B4]" : ""
+                        }`
+                      }
                     >
                       {cls}
                     </Listbox.Option>
@@ -160,29 +164,24 @@ export default function SearchBar({
 
         {/* Bottom row */}
         <div className="flex flex-wrap gap-4 items-end">
-          {/* Origin */}
-          <AirportInput
-            label="From"
-            value={origin}
-            setValue={setOrigin}
-            suggestions={originSuggestions}
-            setSuggestions={setOriginSuggestions}
-          />
-
-          {/* Destination */}
+          <AirportInput label="From" value={origin} setValue={setOrigin} />
           <AirportInput
             label="To"
             value={destination}
             setValue={setDestination}
-            suggestions={destinationSuggestions}
-            setSuggestions={setDestinationSuggestions}
           />
 
           {/* Departure Date */}
           <DateField label="Departure" date={date} setDate={setDate} />
 
           {/* Return Date (only for round-trip) */}
-          {flightType === "Round-trip" && <DateField label="Return" date={returnDate} setDate={setReturnDate} />}
+          {flightType === "Round-trip" && (
+            <DateField
+              label="Return"
+              date={returnDate}
+              setDate={setReturnDate}
+            />
+          )}
 
           {/* Search Button */}
           <button
@@ -202,51 +201,125 @@ function AirportInput({
   label,
   value,
   setValue,
-  suggestions,
-  setSuggestions,
 }: {
   label: string;
   value: string;
   setValue: (val: string) => void;
-  suggestions: Airport[];
-  setSuggestions: (val: Airport[]) => void;
 }) {
+  const [suggestions, setSuggestions] = useState<Airport[]>([]);
+  const [inputRect, setInputRect] = useState<DOMRect | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const fetchAirports = useMemo(
+    () =>
+      debounce(async (query: string) => {
+        if (!query) return setSuggestions([]);
+        try {
+          const res = await fetch(`/api/airports?query=${query}`);
+          const data = await res.json();
+          setSuggestions(data);
+        } catch (err) {
+          console.error(err);
+        }
+      }, 50),
+    []
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        !document.getElementById(`airport-input-${label}`)?.contains(target)
+      ) {
+        setIsFocused(false);
+        setSuggestions([]);
+      }
+    };
+    window.addEventListener("mousedown", handleClickOutside);
+    return () => window.removeEventListener("mousedown", handleClickOutside);
+  }, [label]);
+
+  useEffect(() => {
+    return () => {
+      fetchAirports.cancel();
+    };
+  }, [fetchAirports]);
+
   return (
-    <div className="relative flex-1 min-w-[200px]">
-      <label className="block text-sm font-medium text-white mb-2">{label}</label>
+    <div
+      className="relative flex-1 min-w-[200px]"
+      id={`airport-input-${label}`}
+    >
+      <label className="block text-sm font-medium text-white mb-2">
+        {label}
+      </label>
       <div className="relative">
         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
         <input
           type="text"
           placeholder={`${label} (IATA code)`}
           value={value}
-          onChange={(e) => setValue(e.target.value.toUpperCase())}
+          onChange={(e) => {
+            const val = e.target.value.toUpperCase();
+            setValue(val);
+            fetchAirports(val);
+          }}
+          onFocus={(e) => {
+            setInputRect(e.currentTarget.getBoundingClientRect());
+            setIsFocused(true);
+          }}
           className="w-full h-12 pl-10 pr-4 rounded-lg bg-[#0D112F] border border-[rgba(255,255,255,0.1)] text-gray-300 placeholder:text-gray-400"
         />
       </div>
-      {suggestions.length > 0 && (
-        <ul className="absolute top-full left-0 right-0 bg-[rgba(22,10,45,0.8)] mt-1 rounded-lg shadow-lg z-50 max-h-48 overflow-auto">
-          {suggestions.map((a) => (
-            <li
-              key={a.iataCode}
-              className="p-3 hover:bg-[rgba(66,2,180,0.2)] cursor-pointer text-sm border-b border-[rgba(255,255,255,0.1)] last:border-b-0"
-              onClick={() => {
-                setValue(a.iataCode);
-                setSuggestions([]);
+
+      {/* Portal dropdown */}
+      {typeof document !== "undefined" &&
+        inputRect &&
+        isFocused &&
+        createPortal(
+          <Transition
+            as={Fragment}
+            show={suggestions.length > 0}
+            enter="transition ease-out duration-200"
+            enterFrom="opacity-0 translate-y-1"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition ease-in duration-150"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 translate-y-1"
+          >
+            <ul
+              className="absolute bg-[rgba(22,10,45,0.9)] rounded-lg shadow-lg z-[9999] max-h-48 overflow-auto"
+              style={{
+                top: inputRect.bottom + 6,
+                left: inputRect.left,
+                width: inputRect.width,
               }}
             >
-              <div className="font-medium">{a.iataCode}</div>
-              <div className="text-gray-400">
-                {a.cityName}, {a.countryName}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+              {suggestions.map((a) => (
+                <li
+                  key={a.iataCode}
+                  className="p-3 hover:bg-[rgba(66,2,180,0.2)] cursor-pointer text-sm border-b border-[rgba(255,255,255,0.1)] last:border-b-0"
+                  onClick={() => {
+                    setValue(a.iataCode);
+                    setSuggestions([]);
+                    setIsFocused(false);
+                  }}
+                >
+                  <div className="font-medium">{a.iataCode}</div>
+                  <div className="text-gray-400">
+                    {a.cityName}, {a.countryName}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Transition>,
+          document.body
+        )}
     </div>
   );
 }
 
+// --- DateField remains unchanged ---
 function DateField({
   label,
   date,
@@ -258,19 +331,21 @@ function DateField({
 }) {
   return (
     <div className="min-w-[160px] relative">
-      <label className="block text-sm font-medium text-white mb-2">{label}</label>
+      <label className="block text-sm font-medium text-white mb-2">
+        {label}
+      </label>
       <div className="relative">
         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 z-5" />
         <DatePicker
-  selected={date}
-  onChange={(d: Date | null) => setDate(d)}
-  placeholderText={`Select ${label.toLowerCase()} date`}
-  className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(13,17,47,1)] border border-[rgba(255,255,255,0.1)] text-gray-300"
-  calendarClassName="bg-[rgba(13,17,47,1)] text-white"
-  dayClassName={() => "text-white hover:bg-[#4202B4] rounded-full"}
-  popperClassName="z-50"       // makes the popper itself high z-index
-  portalId="root-portal"       // forces rendering inside #root-portal
-/>
+          selected={date}
+          onChange={(d: Date | null) => setDate(d)}
+          placeholderText={`Select ${label.toLowerCase()} date`}
+          className="w-full h-12 pl-10 pr-4 rounded-lg bg-[rgba(13,17,47,1)] border border-[rgba(255,255,255,0.1)] text-gray-300"
+          calendarClassName="bg-[rgba(13,17,47,1)] text-white"
+          dayClassName={() => "text-white hover:bg-[#4202B4] rounded-full"}
+          popperClassName="z-50"
+          portalId="root-portal"
+        />
       </div>
     </div>
   );
