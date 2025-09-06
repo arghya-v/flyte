@@ -19,6 +19,7 @@
 <h2 id="features">Features</h2>
 <ul>
   <li>Flight Search by departure/arrival airports, dates, and passengers</li>
+  <li>Flight Distance Counter</li>
   <li>Real-time Flight Data using <strong>Amadeus API</strong></li>
   <li>Dynamic Currency Conversion (USD, CAD, EUR, GBP, INR, JPY)</li>
   <li>Airport Information: name, city, and coordinates</li>
