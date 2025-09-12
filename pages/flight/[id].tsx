@@ -16,6 +16,7 @@ import FlightacDetails from "@/components/flight&acDetails";
 import FlightBookingLinks from "@/components/booking";
 import Header from "@/components/header";
 import TotalDistance from "@/components/totaldistance";
+import { Analytics } from "@vercel/analytics/next"
 const AirportMap = dynamic(() => import("../../components/FlightMap"), {
   ssr: false,
 });
@@ -178,6 +179,7 @@ export default function FlightDetails() {
     >
       <h1 className="text-xs font-md mb-6 text-center text-right text-white/30">
         Flight ID: {Array.isArray(id) ? id[0] : id}
+        <Analytics/>
       </h1>
 
       <div className="flex flex-col lg:flex-row gap-8 mt-10">

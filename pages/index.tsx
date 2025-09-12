@@ -8,7 +8,7 @@ import CurrencySelector from "@/components/currency";
 import LoadingSpinner from "@/components/loading";
 import Header from "@/components/header";
 import Link from "next/link";
-
+import { Analytics } from "@vercel/analytics/next"
 export default function Home() {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -105,7 +105,9 @@ export default function Home() {
   };
 
   return (
+
     <div className="min-h-screen bg-[#0C041C] text-textPrimary font-inter flex flex-col">
+      <Analytics/>
       <CurrencySelector>
         {(currency, rates) => (
           <>

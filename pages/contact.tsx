@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/header";
 import Link from "next/link";
-
+import { Analytics } from "@vercel/analytics/next"
 export default function ContactPage() {
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -27,6 +27,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-[#0C041C] text-textPrimary font-inter flex flex-col">
+      <Analytics/>
       {/* Animated header */}
       <motion.div
         initial={{ y: 0 }}
