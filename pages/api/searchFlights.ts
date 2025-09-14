@@ -110,7 +110,7 @@ export default async function handler(
             at: seg.arrival.at,
           },
           duration: seg.duration,
-          aircraft: seg.aircraft?.code || null, // 👈 add this
+          aircraft: seg.aircraft?.code || null,
         })),
       })),
     }));

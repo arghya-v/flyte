@@ -87,7 +87,7 @@ export default function ContactPage() {
           <p className="text-sm text-gray-400">
             © {new Date().getFullYear()} Flyte. This project is under the MIT License.
           </p>
-          <div className="flex gap-6 text-sm">
+          <div className="text-white flex gap-6 text-sm">
             <Link href="/about" className="hover:text-blue-400 transition">
               About
             </Link>

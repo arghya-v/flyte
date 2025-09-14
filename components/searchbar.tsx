@@ -213,32 +213,39 @@ function AirportInput({
   const fetchAirports = useMemo(
     () =>
       debounce(async (query: string) => {
-        if (!query) return setSuggestions([]);
         try {
-          const res = await fetch(`/api/airports?query=${query}`);
+          const res = await fetch(`/api/airports?query=${encodeURIComponent(query)}`);
           const data = await res.json();
-          setSuggestions(data);
+          setSuggestions(Array.isArray(data) ? data : []);
         } catch (err) {
-          console.error(err);
+          console.error("fetchAirports error", err);
+          setSuggestions([]);
         }
-      }, 50),
+      }, 150),
     []
   );
 
+  // Close dropdown when clicking outside; allow clicks inside the portaled dropdown too
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        !document.getElementById(`airport-input-${label}`)?.contains(target)
-      ) {
-        setIsFocused(false);
-        setSuggestions([]);
+      const target = e.target as Node | null;
+      const container = document.getElementById(`airport-input-${label}`);
+      const dropdown = document.getElementById(`airport-dropdown-${label}`);
+
+      // if click is inside container OR inside dropdown, do nothing
+      if ((container && target && container.contains(target)) || (dropdown && target && dropdown.contains(target))) {
+        return;
       }
+
+      setIsFocused(false);
+      setSuggestions([]);
     };
+
     window.addEventListener("mousedown", handleClickOutside);
     return () => window.removeEventListener("mousedown", handleClickOutside);
   }, [label]);
 
+  // cleanup debounced function
   useEffect(() => {
     return () => {
       fetchAirports.cancel();
@@ -246,13 +253,8 @@ function AirportInput({
   }, [fetchAirports]);
 
   return (
-    <div
-      className="relative flex-1 min-w-[200px]"
-      id={`airport-input-${label}`}
-    >
-      <label className="block text-sm font-medium text-white mb-2">
-        {label}
-      </label>
+    <div className="relative flex-1 min-w-[200px]" id={`airport-input-${label}`}>
+      <label className="block text-sm font-medium text-white mb-2">{label}</label>
       <div className="relative">
         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
         <input
@@ -267,15 +269,14 @@ function AirportInput({
           onFocus={(e) => {
             setInputRect(e.currentTarget.getBoundingClientRect());
             setIsFocused(true);
+            fetchAirports(""); // fetch popular immediately
           }}
           className="w-full h-12 pl-10 pr-4 rounded-lg bg-[#0D112F] border border-[rgba(255,255,255,0.1)] text-gray-300 placeholder:text-gray-400"
         />
       </div>
 
       {/* Portal dropdown */}
-      {typeof document !== "undefined" &&
-        inputRect &&
-        isFocused &&
+      {typeof document !== "undefined" && inputRect && isFocused &&
         createPortal(
           <Transition
             as={Fragment}
@@ -288,6 +289,7 @@ function AirportInput({
             leaveTo="opacity-0 translate-y-1"
           >
             <ul
+              id={`airport-dropdown-${label}`}
               className="absolute bg-[rgba(22,10,45,0.9)] rounded-lg shadow-lg z-[9999] max-h-48 overflow-auto"
               style={{
                 top: inputRect.bottom + 6,
@@ -297,13 +299,17 @@ function AirportInput({
             >
               {suggestions.map((a) => (
                 <li
-                  key={a.iataCode}
-                  className="p-3 hover:bg-[rgba(66,2,180,0.2)] cursor-pointer text-sm border-b border-[rgba(255,255,255,0.1)] last:border-b-0"
-                  onClick={() => {
+                  key={a.iataCode || a.name}
+                  // onMouseDown runs before the window 'mousedown' handler closes dropdown — so we reliably capture the click
+                  onMouseDown={(e) => {
+                    // prevent default so the input doesn't immediately blur (optional but helps)
+                    e.preventDefault();
+                    // set the value (IATA code); change to `${a.cityName} (${a.iataCode})` if you prefer
                     setValue(a.iataCode);
                     setSuggestions([]);
                     setIsFocused(false);
                   }}
+                  className="p-3 hover:bg-[rgba(66,2,180,0.2)] cursor-pointer text-sm border-b border-[rgba(255,255,255,0.1)] last:border-b-0"
                 >
                   <div className="font-medium">{a.iataCode}</div>
                   <div className="text-gray-400">
@@ -318,6 +324,7 @@ function AirportInput({
     </div>
   );
 }
+
 
 // --- DateField remains unchanged ---
 function DateField({
