@@ -1,7 +1,7 @@
 <img width="1584" height="396" alt="flyte banner (2)" src="https://github.com/user-attachments/assets/705d6ecf-9491-4180-b600-baf0da432145" />
 
 <p>A modern, responsive flight search engine built with <strong>Next.js</strong>, <strong>TypeScript</strong>, and <strong>React</strong>, featuring real-time flight data, dynamic currency conversion, airport information, and amenities display.</p>
-
+<a href="https://www.producthunt.com/products/flyte-5?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-flyte&#0045;5" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1033703&theme=light&t=1762271112603" alt="Flyte - a&#0032;simple&#0032;flight&#0032;search&#0032;engine | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 <h2>Table of Contents</h2>
 <ul>
   <li><a href="#features">Features</a></li>
