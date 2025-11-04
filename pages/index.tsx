@@ -9,6 +9,7 @@ import LoadingSpinner from "@/components/loading";
 import Header from "@/components/header";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next"
+import Image from "next/image";
 export default function Home() {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -186,6 +187,19 @@ export default function Home() {
             License.
           </p>
           <div className="text-white flex gap-6 text-sm ">
+            <a
+                  href="https://www.producthunt.com/products/flyte-5?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-flyte-5"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1033703&theme=light&t=1762270139159"
+                    alt="Flyte - a simple flight search engine | Product Hunt"
+                    width={250}
+                    height={54}
+                    style={{ width: "110px", height: "25px" }}
+                  />
+                </a>
             <Link href="/about" className="hover:text-blue-400 transition">
               About
             </Link>
