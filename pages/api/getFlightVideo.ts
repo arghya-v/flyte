@@ -51,6 +51,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (airline === "UA") airline = "United Airlines";
     if (airline === "QF") airline = "Qantas";
     if (airline === "AC") airline = "Air Canada";
+    if (airline === "NZ") airline = "Air New Zealand";
+    if (airline === "EY") airline = "Etihad Airways";
+    if (airline === "TK") airline = "Turkish Airlines";
+    if (airline === "IB") airline = "Iberia";
+    if (airline === "AZ") airline = "ITA Airways";
+    if (airline === "SK") airline = "Scandinavian Airlines";
+    if (airline === "JL") airline = "Japan Airlines";
+    if (airline === "NH") airline = "All Nippon Airways (ANA)";
+    if (airline === "KE") airline = "Korean Air";
+    if (airline === "AY") airline = "Finnair";
+    if (airline === "SU") airline = "Aeroflot Russian Airlines";
+    if (airline === "AM") airline = "Aeroméxico";
+    if (airline === "CM") airline = "Copa Airlines";
+    if (airline === "LA") airline = "LATAM Airlines";
+    if (airline === "SA") airline = "South African Airways";
+    if (airline === "WN") airline = "Southwest Airlines";
+    if (airline === "FR") airline = "Ryanair";
+    if (airline === "U2") airline = "easyJet";
+    if (airline === "DY") airline = "Norwegian Air Shuttle";
+    if (airline === "B6") airline = "JetBlue Airways";
+    if (airline === "F9") airline = "Frontier Airlines";
+    if (airline === "NK") airline = "Spirit Airlines";
+    if (airline === "G3") airline = "Gol Linhas Aéreas";
+    if (airline === "HU") airline = "Hainan Airlines";
+
 
     airline = airline.trim(); // ensure no extra whitespace
 
