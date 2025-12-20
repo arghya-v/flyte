@@ -20,7 +20,7 @@
     "lru-cache": "^11.2.1",
     "lucide-react": "^0.539.0",
     "mapbox-gl": "^3.14.0",
-    "next": "15.4.6",
+    "next": "15.4.10",
     "node-fetch": "^3.3.2",
     "react": "19.1.0",
     "react-datepicker": "^8.4.0",
